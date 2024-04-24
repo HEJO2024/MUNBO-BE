@@ -32,17 +32,13 @@ const join = (req, res) => {
 
 //로그인
 const login = async (req, res) => {
-    const jsonData = req.body;
-    console.log(jsonData);
-    // const {userId, passwd} = req.body;
+    const {userId, passwd} = req.body;
 
     try {
         const user = await User.findOne({
             where: {
-                userId: jsonData.userId,
-                passwd: jsonData.passwd
-                // userId: userId,
-                // passwd: passwd
+                userId: userId,
+                passwd: passwd
             },
             attributes: [
                 'userId', 'passwd', 'userName', 'userEmail', 'is_admin'
