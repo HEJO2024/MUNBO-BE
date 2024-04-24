@@ -20,7 +20,7 @@ const join = (req, res) => {
     .then(user => { //user: User.create()의 결과 반환된 객체
         res.status(200).json({
             "message": "join success"
-        })
+        });
     })
     .catch(err => {
         console.log(`${err}: server error: user join failed`);
@@ -46,7 +46,7 @@ const login = async (req, res) => {
         });
 
         if(!user) {
-            return res.status(404).json({
+            return res.status(401).json({
                 "message": "Unauthorized"
             })
         } else {
@@ -234,7 +234,7 @@ const authLogin =  async (req,res) => {
         });
 
         if(!user){ //로그인 실패
-            return res.status(404).json({
+            return res.status(401).json({
                 "message": "일반 사용자는 관리자 페이지에 접근할 수 없습니다"
             })
         } else {
@@ -328,6 +328,7 @@ const authUserUpdate = async (req, res) => {
     }
 }
 
+// 회원정보 수정 요청
 const authUserUpdate_process = (req, res) => {
     const { basic_userId, userId, passwd, userName, userEmail, is_admin } = req.body; //기존 userId도 보내줘야.
 
@@ -343,15 +344,9 @@ const authUserUpdate_process = (req, res) => {
         }
     })
     .then(user => {
-        if(!user){
-            res.status(404).json({
-                "": ""
-            })
-    } else{
         res.status(200).json({
             "message": "회원정보 수정 성공"
         })
-    }
     })
     .catch(err => {
         console.log(err);
