@@ -32,13 +32,17 @@ const join = (req, res) => {
 
 //로그인
 const login = async (req, res) => {
-    const {userId, passwd} = req.body;
+    const jsonData = req.body;
+    console.log(jsonData);
+    // const {userId, passwd} = req.body;
 
     try {
         const user = await User.findOne({
             where: {
-                userId: userId,
-                passwd: passwd
+                userId: jsonData.userId,
+                passwd: jsonData.passwd
+                // userId: userId,
+                // passwd: passwd
             },
             attributes: [
                 'userId', 'passwd', 'userName', 'userEmail', 'is_admin'
@@ -47,7 +51,7 @@ const login = async (req, res) => {
 
         if(!user) {
             return res.status(401).json({
-                "message": "Unauthorized"
+                "message": "아이디나 비밀번호가 일치하지 않습니다."
             })
         } else {
             const userInfo = {
@@ -87,14 +91,14 @@ const login = async (req, res) => {
             } catch(error) {
                 console.log(error);
                 res.status(500).json({
-                    "message": "Internal Server Error"
+                    "message": "Internal Server Error(로그인 서버 오류)"
                 });
             }
         }
     } catch(err) {
         console.log(err);
         res.status(500).json({
-            "message": "Internal Server Error"
+            "message": "Internal Server Error(로그인 서버 오류2)"
         })
     }
 }
