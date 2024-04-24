@@ -1,5 +1,6 @@
 const express = require('express');
 const dotenv = require('dotenv');
+const bodyParser = require('body-parser');
 
 dotenv.config();
 
@@ -7,6 +8,7 @@ const app = express();
 
 // 미들웨어
 app.use(express.json());
+app.use(bodyParser.json());
 
 // 라우터
 var userRouter = require('./routes/userRoute');
