@@ -1,6 +1,7 @@
 const express = require('express');
 const dotenv = require('dotenv');
 const { createProxyMiddleware } = require('http-proxy-middleware');
+const cors = require('cors');
 
 dotenv.config();
 
@@ -9,19 +10,21 @@ const app = express();
 // 미들웨어
 app.use(express.json());
 // app.use('/api', createProxyMiddleware({ target: '13.209.41.40:3000', changeOrigin: true }));
-// app.use('/api', createProxyMiddleware({ 
-//     target: 'https://13.209.41.40:3000', 
-//     changeOrigin: true,
-//     secure: false // SSL 인증서의 유효성 검사 비활성화
-//   }));
 
+app.use(cors({
+  origin: 'http://localhost:5173' // 클라이언트의 출처를 허용
+}));
 
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', 'http://localhost:5173');
   // 다른 CORS 관련 헤더 설정도 가능
   next();
 });
-
+// app.use('/api', createProxyMiddleware({ 
+//     target: 'https://13.209.41.40:3000', 
+//     changeOrigin: true,
+//     secure: false // SSL 인증서의 유효성 검사 비활성화
+//   }));
 app.use((req, res, next) => {
   console.log(`${req.method} ${req.url}`);
   next();
