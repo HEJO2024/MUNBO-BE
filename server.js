@@ -17,6 +17,7 @@ app.use(cors({
 
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', 'http://localhost:5173');
+  res.setHeader('Access-Control-Allow-Origin', 'https://munbo.netlify.app/');
   // 다른 CORS 관련 헤더 설정도 가능
   next();
 });
