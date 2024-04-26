@@ -28,11 +28,11 @@ app.use((req, res, next) => {
 // 라우터
 var userRouter = require('./routes/userRoute');
 var authRouter = require('./routes/authRoute');
-var quizRouter = require('./routes/quizRoute');
+// var quizRouter = require('./routes/quizRoute');
 
 app.use('/users', userRouter);
 app.use('/admin', authRouter);
-app.use('/quiz', quizRouter);
+// app.use('/quiz', quizRouter);
 
 app.listen(process.env.PORT, () => {
     console.log(`server is on ${process.env.PORT}`);
