@@ -10,7 +10,7 @@ const app = express();
 app.use(express.json());
 
 app.use(cors({
-  origin: ['http://localhost:5173', 'https://munbo.netlify.app/'] 
+  origin: ['http://localhost:5173', 'http://munbo.netlify.app/'] 
   // 클라이언트의 출처를 허용
 }));
 
