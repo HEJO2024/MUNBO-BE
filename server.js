@@ -39,7 +39,7 @@ app.use('/admin', authRouter);
 // HTTPS 옵션 설정
 const httpsOptions = {
   key: fs.readFileSync('../privkey.pem'),
-  cert: fs.readFileSync('/etc/letsencrypt/live/munbo2024.site/fullchain.pem')
+  cert: fs.readFileSync('../fullchain.pem')
 };
 
 // HTTPS 서버 시작
