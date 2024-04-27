@@ -11,10 +11,10 @@ const app = express();
 // 미들웨어
 app.use(express.json());
 
-app.use(cors({
-  origin: ['http://localhost:5173', 'https://munbo.netlify.app/', 'https://munbo2024.site'] 
-  // 클라이언트의 출처를 허용
-}));
+// app.use(cors({
+//   origin: ['http://localhost:5173', 'https://munbo.netlify.app/', 'https://munbo2024.site'] 
+//   // 클라이언트의 출처를 허용
+// }));
 
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -26,15 +26,16 @@ app.use((req, res, next) => {
   next();
 });
 
-
 // 라우터
 var userRouter = require('./routes/userRoute');
 var authRouter = require('./routes/authRoute');
 // var quizRouter = require('./routes/quizRoute');
+// var summaryRouter = require('./routes/summaryRoute');
 
 app.use('/users', userRouter);
 app.use('/admin', authRouter);
 // app.use('/quiz', quizRouter);
+// app.use('/summaryNote', summaryRouter);
 
 // HTTPS 옵션 설정
 const httpsOptions = {
@@ -52,7 +53,6 @@ https.createServer(httpsOptions, app).listen(PORT, () => {
 // const express = require('express');
 // const dotenv = require('dotenv');
 // const cors = require('cors');
-// const https = require('https');
 
 // dotenv.config();
 
@@ -76,15 +76,19 @@ https.createServer(httpsOptions, app).listen(PORT, () => {
 //   next();
 // });
 
-
 // // 라우터
 // var userRouter = require('./routes/userRoute');
 // var authRouter = require('./routes/authRoute');
 // // var quizRouter = require('./routes/quizRoute');
 
+// //라우터 추가
+// var summaryRouter = require('./routes/summaryRoute');
+
 // app.use('/users', userRouter);
 // app.use('/admin', authRouter);
 // // app.use('/quiz', quizRouter);
+// //추가
+// app.use('/summaryNote', summaryRouter);
 
 // app.listen(process.env.PORT, () => {
 //     console.log(`server is on ${process.env.PORT}`);
