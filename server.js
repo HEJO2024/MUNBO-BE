@@ -48,9 +48,9 @@ const httpsOptions = { // letsencrypt로 받은 인증서 경로를 입력해 �
 
   ca: fs.readFileSync('../fullchain.pem'),
   
-  key: fs.readFileSync('/etc/letsencrypt/live/munbo2024.site/privkey.pem'),
+  key: fs.readFileSync('../privkey.pem'),
   
-  cert: fs.readFileSync('/etc/letsencrypt/live/munbo2024.site/cert.pem')
+  cert: fs.readFileSync('../cert.pem')
   
   };
 
