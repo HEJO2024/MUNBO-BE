@@ -46,7 +46,7 @@ app.use('/admin', authRouter);
 
 const httpsOptions = { // letsencrypt로 받은 인증서 경로를 입력해 줍니다.
 
-  ca: fs.readFileSync('/etc/letsencrypt/live/munbo2024.site/fullchain.pem'),
+  ca: fs.readFileSync('../fullchain.pem'),
   
   key: fs.readFileSync('/etc/letsencrypt/live/munbo2024.site/privkey.pem'),
   
