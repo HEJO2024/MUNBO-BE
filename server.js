@@ -54,10 +54,8 @@ const httpsOptions = {
   
 //   };
 
-https.createServer(httpsOptions, app).listen(443);
-
-// // HTTPS 서버 시작
-// const PORT = process.env.PORT || 443; // HTTPS 포트 설정
-// https.createServer(httpsOptions, app).listen(PORT, () => {
-//   console.log(`Server is running on port ${PORT}`);
-// });
+// HTTPS 서버 시작
+const PORT = process.env.PORT || 443; // HTTPS 포트 설정
+https.createServer(httpsOptions, app).listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});

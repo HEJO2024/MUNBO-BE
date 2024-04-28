@@ -17,16 +17,19 @@ app.use(session({
 // 미들웨어
 app.use(express.json());
 
-// app.use(cors({
-//   origin: ['http://localhost:5173', 'https://munbo.netlify.app/'] 
-//   // 클라이언트의 출처를 허용
-// }));
+app.use(cors({
+  origin: ['http://localhost:5173', 'https://munbo.netlify.app/'],
+  methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
+  // 클라이언트의 출처를 허용
+}));
 
-app.use((req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  // 다른 CORS 관련 헤더 설정도 가능
-  next();
-});
+// app.use((req, res, next) => {
+//   res.setHeader('Access-Control-Allow-Origin', '*');
+//   // 다른 CORS 관련 헤더 설정도 가능
+//   next();
+// });
+
 app.use((req, res, next) => {
   console.log(`${req.method} ${req.url}`);
   next();
