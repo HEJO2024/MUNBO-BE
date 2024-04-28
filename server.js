@@ -54,8 +54,6 @@ const httpsOptions = {
   
 //   };
 
-http.createServer(app).listen(80);
-
 https.createServer(httpsOptions, app).listen(443);
 
 // // HTTPS 서버 시작
