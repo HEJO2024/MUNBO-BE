@@ -38,25 +38,25 @@ app.use('/admin', authRouter);
 // app.use('/quiz', quizRouter);
 // app.use('/summaryNote', summaryRouter);
 
-// // HTTPS 옵션 설정
-// const httpsOptions = {
-//   key: fs.readFileSync('./privkey.pem'),
-//   cert: fs.readFileSync('./fullchain.pem')
-// };
-
-const httpsOptions = { // letsencrypt로 받은 인증서 경로를 입력해 줍니다.
-
-  ca: fs.readFileSync('../fullchain.pem'),
-  
+// HTTPS 옵션 설정
+const httpsOptions = {
   key: fs.readFileSync('../privkey.pem'),
+  cert: fs.readFileSync('../fullchain.pem')
+};
+
+// const httpsOptions = { // letsencrypt로 받은 인증서 경로를 입력해 줍니다.
+
+//   ca: fs.readFileSync('../fullchain.pem'),
   
-  cert: fs.readFileSync('../cert.pem')
+//   key: fs.readFileSync('../privkey.pem'),
   
-  };
+//   cert: fs.readFileSync('../cert.pem')
+  
+//   };
 
 http.createServer(app).listen(80);
 
-https.createServer(httpsOptionsoptions, app).listen(443);
+https.createServer(httpsOptions, app).listen(443);
 
 // // HTTPS 서버 시작
 // const PORT = process.env.PORT || 443; // HTTPS 포트 설정
