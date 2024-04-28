@@ -1,6 +1,6 @@
 const { where } = require('sequelize');
 const SummaryContent = require('../models/SummaryContent');
-const SummaryNote = require('../models/summaryNote');
+const SummaryNote = require('../models/SummaryNote');
 const spawn = require('child_process').spawn;
 
 function getCurrentDateTime() {
