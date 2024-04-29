@@ -81,7 +81,9 @@ const login = async (req, res) => {
                 res.set('Authorization', 'Bearer ' + accessToken);
                 
                 res.status(200).json({
-                    message: 'login success'
+                    message: 'login success',
+                    "token": accessToken,
+                    "userName": userInfo.userName
                 })
 
             } catch(error) {

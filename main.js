@@ -48,7 +48,8 @@ app.use('/quiz', quizRouter);
 //추가
 app.use('/summaryNote', summaryRouter);
 
-const port = process.env.PORT;
+// const port = process.env.PORT;
+const port = 5000;
 
 app.listen(port, () => {
   console.log(`Server Listening on ${port}`);

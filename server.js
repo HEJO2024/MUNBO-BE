@@ -30,13 +30,13 @@ app.use((req, res, next) => {
 // 라우터
 var userRouter = require('./routes/userRoute');
 var authRouter = require('./routes/authRoute');
-// var quizRouter = require('./routes/quizRoute');
-// var summaryRouter = require('./routes/summaryRoute');
+var quizRouter = require('./routes/quizRoute');
+var summaryRouter = require('./routes/summaryRoute');
 
 app.use('/users', userRouter);
 app.use('/admin', authRouter);
-// app.use('/quiz', quizRouter);
-// app.use('/summaryNote', summaryRouter);
+app.use('/quiz', quizRouter);
+app.use('/summaryNote', summaryRouter);
 
 // HTTPS 옵션 설정
 const httpsOptions = {
