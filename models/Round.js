@@ -1,5 +1,3 @@
-require('dotenv').config();
-
 const { STRING } = require('sequelize');
 const { Sequelize, DataType, DataTypes } = require('sequelize');
 const sequelize = new Sequelize(process.env.DB_DATABASE, process.env.DB_USER, process.env.DB_PWD, {
@@ -12,20 +10,20 @@ const sequelize = new Sequelize(process.env.DB_DATABASE, process.env.DB_USER, pr
     }
 });
 
-const Subject = sequelize.define('Subject', {
-    subjectId: {
+const Round = sequelize.define('Round', {
+    roundId: {
         type: DataTypes.INTEGER,
         allowNull: false,
         unique: true,
         primaryKey: true,
         autoIncrement: true
     },
-    subjectName: {
+    roundName: {
         type: DataTypes.STRING,
         allowNull: false
     }
 }, {
-    tableName: 'subject'
+    tableName: 'round'
 })
 
-module.exports = Subject;
+module.exports = Round;

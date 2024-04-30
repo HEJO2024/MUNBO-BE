@@ -1,6 +1,9 @@
 const Quiz = require('../models/Quiz');
 const UserSolveRecord = require('../models/UserSolveRecord');
-const Sequelize = require('sequelize');
+const Round = require('../models/Round');
+const Keyword = require('../models/Keyword');
+// const Sequelize = require('sequelize');
+const { watchFile } = require('fs');
 
 const testSolve = async (req, res) => {
     req.session.solveQuiz = [];
@@ -93,7 +96,135 @@ const testNext = async (req, res) => {
     }
 }
 
+//관리자용
+const auth_quizList = async (req, res) => {
+    const { subjectId } = req.body;
+
+    try {
+        const quizList = await Quiz.findAll({
+            where: {
+                subjectId: subjectId
+            },
+            attributes: ['quizId', 'quizContent']
+        })
+        if(!quizList){
+            res.status(404).json({
+                "message": "there is no quiz"
+            })
+        } else {
+            res.status(200).json({
+                quizData
+            })
+        }
+    } catch(err) {
+        console.log(err);
+        res.status(500).json({
+            "message": "Internal server error"
+        })
+    }
+}
+
+const auth_quizView = async (req, res) => {
+    const { quizId } = req.body;
+
+    try {
+        const quiz = await Quiz.findOne({
+            where: {
+                quizId: quizId
+            },
+            attributes: ['quizId', 'quizContent', 'roundId', 'answ_1', 'answ_2', 'answ_3', 'answ_4', 'r_answ', 'wrgAnsw_explanation', 'keywordId']
+        })
+        if(!quiz){
+            res.status(404).json({
+                "message": "there is no quiz"
+            })
+        } else {
+            const roundName = await Round.findOne({
+                where: {
+                    roundId: quiz.roundId
+                },
+                attributes: ['roundName']
+            })
+            const keywordName = await Keyword.findOne({
+                where: {
+                    keywordId: quiz.keywordId
+                }
+            })
+            res.status(200).json({
+                quiz,
+                roundName,
+                keywordName
+            })
+        }
+    } catch(err) {
+        console.log(err);
+        res.status(500).json({
+            "message": "Internal server error"
+        })
+    }
+}
+
+const auth_quizUpdate = (req, res) => {
+    const { quizId, quizContent, answ_1, answ_2, answ_3, answ_4, r_answ, wrgAnsw_explanation } = req.body;
+
+    Quiz.update({
+        quizContent: quizContent,
+        answ_1: answ_1,
+        answ_2: answ_2, 
+        answ_3: answ_3,
+        answ_4: answ_4,
+        r_answ: r_answ,
+        wrgAnsw_explanation: wrgAnsw_explanation
+    }, {
+        where: {
+            quizId: quizId
+        }
+    })
+    .then(quiz => {
+        res.status(200).json({
+            "message": "quiz data update success"
+        })
+    })
+    .catch(err => {
+        console.log(err);
+        res.status(500).json({
+            "message": "Internal server error"
+        })
+    })        
+}
+
+const auth_quizDelete = (req, res) => {
+    const { quizId } = req.body;
+
+    Quiz.destroy({
+        where: {
+            quizId: quizId
+        }
+    })
+    .then(quiz => {
+        if(!quiz){
+            res.status(404).json({
+                "message": "there is no quiz"
+            })
+        } else {
+            res.status(200).json({
+                "message": "quiz delete success"
+            })
+        }
+    })
+    .catch(err => {
+        console.log(err);
+        res.status(500).json({
+            "message": "Internal server error"
+        })
+    })
+}
+
 module.exports = {
     testSolve,
-    testNext
+    testNext,
+    auth_quizList,
+    auth_quizView,
+    auth_quizUpdate,
+    auth_quizDelete
 }
