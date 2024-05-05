@@ -147,7 +147,7 @@ const summary_listView = async (req, res) => {
 }
 
 const summaryView = async (req, res) => {
-    const { noteId } = req.params;
+    const { noteId } = req.query;
 
     try {
         const summaryNote = await SummaryNote.findOne({
