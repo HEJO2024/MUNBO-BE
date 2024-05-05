@@ -55,7 +55,7 @@ const testSolve = async (req, res) => {
 }
 
 const testNext = async (req, res) => {
-    const { quizId, userAnsw, is_correct } = req.body;
+    const { quizId, userAnsw, is_correct } = req.params;
 
     try {
         await UserSolveRecord.create({
