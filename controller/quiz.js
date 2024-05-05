@@ -35,7 +35,7 @@ const testSolve = async (req, res) => {
                     "message": "there is no quiz"
                 })
             } else {
-                quizData["lastQuiz"] = false;
+                quizData.lastQuiz = false;
                 res.status(200).json({
                     quizData
                 })
