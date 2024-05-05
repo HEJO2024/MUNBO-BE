@@ -17,7 +17,9 @@ async function authenticateAccessToken(req, res, next) {
             console.log(`verify error`);
             if (err.name === 'TokenExpiredError') {
                 // 토큰의 유효기간이 만료된 경우
-                return res.redirect('/users/logout');
+                return res.status(401).json({
+                    "message": "Token has expired."
+                })
             } else {
                 // 다른 인증 오류인 경우
                 return res.status(403).json({

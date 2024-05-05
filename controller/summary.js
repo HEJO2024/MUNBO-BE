@@ -1,7 +1,10 @@
 const { where } = require('sequelize');
 const SummaryContent = require('../models/SummaryContent');
 const SummaryNote = require('../models/SummaryNote');
+const AiQuiz = require('../models/AiQuiz');
 const spawn = require('child_process').spawn;
+const Sequelize = require('sequelize');
+const { json } = require('body-parser');
 
 function getCurrentDateTime() {
     const currentDate = new Date();
@@ -17,7 +20,7 @@ const summaryCreate = (req, res) => { //요약본 생성
 
     const inputJson = JSON.stringify(userInput);
 
-    const result = spawn('python', ['./aidata/summary.py', inputJson]);
+    const result = spawn('python3', ['./aidata/summary.py', inputJson]);
 
     result.stdout.on('data', (data) => {
         // 받아온 데이터는 Buffer 형식이므로 문자열로 변환
@@ -69,7 +72,7 @@ const noteCreate = (req, res) => {
 }
 
 const summaryQuiz_create = async (req, res) => {
-    const { summaryId, summaryLanguage, quizNum, userRequest, quizType } = req.body;
+    const { summaryId, Q_language, quizNum, userRequirements, quizType  } = req.body;
 
     //summaryContent에서 원본 텍스트 추출
     const text = await SummaryContent.findOne({
@@ -85,22 +88,37 @@ const summaryQuiz_create = async (req, res) => {
         })
     } else {
         const userInput = {
-            text: text.summary_originText,
-            Q_language: summaryLanguage,
+            text: text,
+            Q_language: Q_language,
             quizNum: quizNum,
-            userRequirements: userRequest,
+            userRequirements: userRequirements,
             quizType: quizType
         }
         const inputJson = JSON.stringify(userInput);
-        const result = spawn('python', ['./aidata/summaryQuiz.py', inputJson]);
+        const result = spawn('python3', ['./aidata/summaryQuiz.py', inputJson]);
 
         result.stdout.on('data', (data) => {
             const jsonData = data.toString();
-            console.log(`jsonData: ${jsonData}`);
+            //생성문제 db 저장
+            // for(i = 0 ; i < quizNum ; i++){
+            //     if(quizType === 0){ //객관식
+            //         AiQuiz.create({
+            //             summaryId: summaryId,
+            //             quizContent: jsonData[i].question,
+            //             answ: Sequelize.literal(`JSON_SET(answ, "$.answ_1", ${jsonData[i].options[0]}, "$.answ_2", ${jsonData[i].options[1]}, "$.answ_3", ${jsonData[i].options[2]}, "$.answ_4", ${jsonData[i].options[3]})`),
+            //             r_answ: jsonData[i].answ,
+            //             quizType: quizType,
+            //             userAssessment: 0
+            //         })
+            //     } else if(quizType === 1){ //주관식
 
+            //     } else { //ox 
 
-
-            res.end('success');
+            //     }
+            // }
+            res.status(200).json({
+                jsonData
+            })
         })
 
         result.stderr.on('data', (data) => {

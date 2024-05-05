@@ -4,6 +4,7 @@ const Round = require('../models/Round');
 const Keyword = require('../models/Keyword');
 // const Sequelize = require('sequelize');
 const { watchFile } = require('fs');
+const spawn = require('child_process').spawn;
 
 const testSolve = async (req, res) => {
     req.session.solveQuiz = [];
@@ -96,24 +97,42 @@ const testNext = async (req, res) => {
     }
 }
 
+const aiQuiz_create = (req, res) => {
+    const text  = "객체" //오답 기록에서 찾기
+
+    const result = spawn('python3', ['./aidata/testQuiz.py', text]);
+
+    result.stdout.on('data', (data) => {
+        // 받아온 데이터는 Buffer 형식이므로 문자열로 변환
+    const jsonData = data.toString();
+    console.log(`jsonData: ${jsonData}`);
+    res.status(200).json({
+        "message": "aiQuiz create success"
+    })
+})
+    result.stderr.on('data', (data) => {
+        console.error(`stderr: ${data}`);
+    });
+}
+
 //관리자용
 const auth_quizList = async (req, res) => {
-    const { subjectId } = req.body;
+    const { subjectId }  = req.query;
 
     try {
-        const quizList = await Quiz.findAll({
+        const quiz = await Quiz.findAll({
             where: {
                 subjectId: subjectId
             },
             attributes: ['quizId', 'quizContent']
         })
-        if(!quizList){
+        if(!quiz){
             res.status(404).json({
                 "message": "there is no quiz"
             })
         } else {
             res.status(200).json({
-                quizData
+                quiz
             })
         }
     } catch(err) {
@@ -223,6 +242,7 @@ const auth_quizDelete = (req, res) => {
 module.exports = {
     testSolve,
     testNext,
+    aiQuiz_create,
     auth_quizList,
     auth_quizView,
     auth_quizUpdate,

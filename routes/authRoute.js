@@ -6,17 +6,20 @@ const { authLogin, authListView, authUserUpdate, authUserUpdate_process, authUse
 const { auth_quizList, auth_quizView, auth_quizUpdate, auth_quizDelete } = require('../controller/quiz');
 const { auth_subjectList, auth_subjectView, auth_subjectCreate, auth_subjectUpdate, auth_subjectDelete } = require('../controller/subject');
 const { auth_roundList, auth_roundView, auth_roundCreate, auth_roundUpdate, auth_roundDelete } = require('../controller/round');
+const { auth_keywordList, auth_keywordView, auth_keywordCreate, auth_keywordUpdate, auth_keywordDelete } = require('../controller/keyword');
 
 const userRouter = express.Router();
 const quizRouter = express.Router();
 const subjectRouter = express.Router();
 const roundRouter = express.Router();
+const keywordRouter = express.Router();
 
 // 미들웨어 적용
 userRouter.use(authenticateAccessToken, authenticateAdmin);
 quizRouter.use(authenticateAccessToken, authenticateAdmin);
 subjectRouter.use(authenticateAccessToken, authenticateAdmin);
 roundRouter.use(authenticateAccessToken, authenticateAdmin);
+keywordRouter.use(authenticateAccessToken, authenticateAdmin);
 
 // 관리자 인증 라우터
 router.post('/users/login', authLogin);
@@ -47,9 +50,17 @@ roundRouter.post('/create', auth_roundCreate);
 roundRouter.put('/update', auth_roundUpdate);
 roundRouter.delete('/delete', auth_roundDelete);
 
+//키워드 관리 라우터
+keywordRouter.get('/listView', auth_keywordList);
+keywordRouter.get('/view', auth_keywordView);
+keywordRouter.post('/create', auth_keywordCreate);
+keywordRouter.put('/update', auth_keywordUpdate);
+keywordRouter.delete('/delete', auth_keywordDelete);
+
 router.use('/users', userRouter);
 router.use('/quiz', quizRouter);
 router.use('/subject', subjectRouter);
 router.use('/round', roundRouter);
+router.use('/keyword', keywordRouter);
 
 module.exports = router;
