@@ -2,7 +2,7 @@ const Quiz = require('../models/Quiz');
 const UserSolveRecord = require('../models/UserSolveRecord');
 const Round = require('../models/Round');
 const Keyword = require('../models/Keyword');
-// const Sequelize = require('sequelize');
+const Sequelize = require('sequelize');
 const { watchFile } = require('fs');
 const spawn = require('child_process').spawn;
 
