@@ -17,7 +17,7 @@ const auth_keywordList = async (req, res) => {
 }
 
 const auth_keywordView  = async (req, res) => {
-    const { keywordId } = req.body;
+    const { keywordId } = req.query;
 
     try {
         const keyword = await Keyword.findOne({

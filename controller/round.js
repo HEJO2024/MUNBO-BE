@@ -17,7 +17,7 @@ const auth_roundList = async (req, res) => {
 }
 
 const auth_roundView = async (req, res) => {
-    const { roundId } = req.body;
+    const { roundId } = req.query;
 
     try{
         const round = Round.findOne({

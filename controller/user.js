@@ -299,7 +299,7 @@ const authListView = async (req, res) => {
 
 // 회원정보 수정 화면
 const authUserUpdate = async (req, res) => {
-    const { userId } = req.body;
+    const { userId } = req.query;
 
     try {
         const user = await User.findOne({

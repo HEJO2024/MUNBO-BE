@@ -17,7 +17,7 @@ const auth_subjectList = async (req, res) => {
 }
 
 const auth_subjectView = async (req, res) => {
-    const { subjectId } = req.body;
+    const { subjectId } = req.query;
 
     try {
         const subject = await Subject.findOne({
