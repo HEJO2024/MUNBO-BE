@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { testSolve, testNext, aiQuiz_create } = require('../controller/quiz');
-const {authenticateAccessToken} = require('../middlewares'); //사용자 인증 모듈
+const {authenticateAccessToken} = require('../middlewares/index'); //사용자 인증 모듈
 
 router.get('/test_solve', testSolve);
 router.get('/test_next', authenticateAccessToken, testNext);
