@@ -55,7 +55,7 @@ const testSolve = async (req, res) => {
 }
 
 const testNext = async (req, res) => {
-    const { quizId, userAnsw, is_correct } = req.params;
+    const { quizId, userAnsw, is_correct } = req.query;
 
     try {
         await UserSolveRecord.create({
@@ -144,7 +144,7 @@ const auth_quizList = async (req, res) => {
 }
 
 const auth_quizView = async (req, res) => {
-    const { quizId } = req.body;
+    const { quizId } = req.query;
 
     try {
         const quiz = await Quiz.findOne({

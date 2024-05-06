@@ -72,7 +72,7 @@ const noteCreate = (req, res) => {
 }
 
 const summaryQuiz_create = async (req, res) => {
-    const { summaryId, Q_language, quizNum, userRequirements, quizType  } = req.body;
+    const { summaryId, Q_language, quizNum, userRequirements, quizType } = req.query;
 
     //summaryContent에서 원본 텍스트 추출
     const text = await SummaryContent.findOne({
