@@ -26,7 +26,7 @@ router.post('/users/login', authLogin);
 
 // 회원정보 관리 라우터
 userRouter.get('/listView', authListView);
-userRouter.get('/update', authUserUpdate);
+userRouter.get('/view', authUserUpdate);
 userRouter.put('/update', authUserUpdate_process);
 userRouter.delete('/delete', authUserDelete);
 

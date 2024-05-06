@@ -5,7 +5,7 @@ const {authenticateAccessToken} = require('../middlewares'); //사용자 인증 
 
 router.post('/create', summaryCreate);
 router.post('/note/create', authenticateAccessToken, noteCreate);
-router.get('/quiz_solve', summaryQuiz_create);
+router.post('/quiz_solve', summaryQuiz_create);
 router.post('/quiz_grade', ); //주관식 채점
 router.get('/note/listView', authenticateAccessToken, summary_listView);
 router.get('/note/view', summaryView);
