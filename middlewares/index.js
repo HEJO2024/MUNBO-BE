@@ -7,8 +7,8 @@ async function authenticateAccessToken(req, res, next) {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
     if (token == null) { // 토큰 없을 때(로그인X) -> 상태코드나 json 속성으로 토큰여부 알려줘서 클라이언트쪽에서 처리(사용자 관리자 동일하게 할 거라서,,)
+        console.log(`req.header: ${req.headers['authorization']}`);
         return res.status(401).json({
-            "token": req.headers['authorization'],
             "message": "there is no Token"
         });
     }

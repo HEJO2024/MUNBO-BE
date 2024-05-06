@@ -168,7 +168,8 @@ const summaryView = async (req, res) => {
                 noteId: noteId,
                 summaryId: summaryNote.summaryId,
                 summaryDate: summaryNote.summaryDate,
-                summaryText: summaryContent.summaryText
+                summaryText: summaryContent.summaryText,
+                summaryTitle: summaryNote.summaryTitle
             }
             res.status(200).json({
                 summaryData
