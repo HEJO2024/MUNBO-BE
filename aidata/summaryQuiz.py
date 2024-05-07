@@ -10,7 +10,6 @@ from langchain.chains import LLMChain
 from langchain.llms import OpenAI
 from fuzzywuzzy import fuzz
 import re
-
 from dotenv import load_dotenv
 
 load_dotenv()  # .env 파일 로드
@@ -56,18 +55,19 @@ llm = OpenAI(temperature=0, max_tokens=4096, model_name='gpt-4-turbo')
 
 # 질문 템플릿 형식
 prompt_template = """
-
 You are a teacher. You are teaching a class of students.
-Make just only {num} {type} of test questions for the following text.
+Make just only {num} {type} of High quality test questions for the following text.
 use {language} as this test language.
 If I have any additional requests when creating this test, you have to use them to create problems.
 Additional request is your top priority when making questions.
 ----------------
-Additional requests:{requests}
+Additional requests: 
+1.{req}
+2.Mix the choices in various ways. For example, there shouldn't be too many C's in the correct answer.
 ----------------
 TEXT: {text}
 """
-prompt = PromptTemplate(template=prompt_template, input_variables=['num', 'type','language','requests','text'])
+prompt = PromptTemplate(template=prompt_template, input_variables=['num', 'type','language','req','text'])
 
 # 문제 생성 변수 생성
 
@@ -86,35 +86,34 @@ else:
 
 # 답변 생성
 llm_chain = LLMChain(prompt=prompt, llm=llm)
-result = llm_chain.run(num=num_v, type=type_v, language=lan_v,requests=requests,text=textbook_content)
+result = llm_chain.run(num=num_v, type=type_v, language=lan_v,req=requests,text=textbook_content)
 
 #객관식 형식 변경 함수
-def convert_to_js_objects_1(text):
+def convert_to_js_objects(text):
     pattern = r'(Q\d+:\s*.*?)\n((?:(?:[A-D]\.\s*.*?)\n?)*)\n(Answer:\s*[A-D])'
     matches = re.findall(pattern, text, re.DOTALL)
-    
+
     js_objects = []
     for match in matches:
         question = match[0]
         options = [option.strip() for option in re.split(r'(?:[A-D]\.\s*)', match[1].strip()) if option.strip()]
         answer = match[2].split(':')[1].strip()
-        
-        js_object = f"""{{
-    question: "{question}",
-    options: [{', '.join([f'"{option}"' for option in options])}],
-    answer: "{answer}"
-}}"""
-        
+
+        js_object = {
+            "question": question,
+            "options": options,
+            "answer": answer
+        }
+
         js_objects.append(js_object)
-    
-    return ', '.join(js_objects)
+
+    return js_objects
 
 if type_v == 객관식:
-    js_objects = convert_to_js_objects_1(result)
-    if js_objects:
-        print(js_objects)
-    else:
-        print("데이터 형식이 잘못되었습니다.")
+    js_objects = convert_to_js_objects(result)
+    json_str = json.dumps(js_objects)
+    quizData = json.loads(json_str)  # json_str을 Python 객체로 변환
+    print(quizData)
 
 else:
     questions = []
@@ -135,4 +134,5 @@ else:
         json_data.append(data)
 
     json_string = json.dumps(json_data, ensure_ascii=False)
-    print(json_string)
+    quizData = json.loads(json_string)
+    print(quizData)
