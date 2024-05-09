@@ -2,8 +2,10 @@ const Quiz = require('../models/Quiz');
 const UserSolveRecord = require('../models/UserSolveRecord');
 const Round = require('../models/Round');
 const Keyword = require('../models/Keyword');
+const AiQuiz = require('../models/AiQuiz');
 const Sequelize = require('sequelize');
 const { watchFile } = require('fs');
+const { json } = require('body-parser');
 const spawn = require('child_process').spawn;
 
 const testSolve = async (req, res) => {
@@ -97,22 +99,99 @@ const testNext = async (req, res) => {
     }
 }
 
-const aiQuiz_create = (req, res) => {
+const checkLog = async (req, res) => {
+    try {
+        const count = await UserSolveRecord.count({
+            where: {
+                userId: req.userId
+            }
+        });
+        quizLog = false;
+        if(count > 0){ // 진단평가 기록 존재
+            quizLog = true;
+        }
+        res.status(200).json({
+            quizLog
+        })
+    } catch(err) {
+        console.log(err);
+        res.status(500).json({
+            "message": "Internal server error"
+        })
+    }
+}
+
+const aiQuiz_create = async (req, res) => {
     const text  = "객체" //오답 기록에서 찾기
+    // 오답 기록에서 키워드 추출
+    try {
+        var w_quiz = await UserSolveRecord.findOne({ //오답 퀴즈 추출
+            where: {
+                userId: req.userId,
+                is_correct: 0
+            },
+            attributes: [ 'quizId' ],
+            order: Sequelize.literal('rand()') // 랜덤하게 순서 정한 뒤 하나 추출
+        })
+        console.log(`w_quiz: ${w_quiz.quizId}`);
+        w_quiz = 9; // 삭제할 부분
+        var keywordId = await Quiz.findOne({ //해당 오답의 키워드 PK 추출
+            where: {
+                quizId: w_quiz
+            },
+            attributes: [ 'keywordId' ]
+        })
+        // keywordId.keywordId = 45;
+        const keyword = await Keyword.findOne({
+            where: {
+                keywordId: keywordId.keywordId
+            },
+            attributes: [ 'keywordName', 'keywordMean' ]
+        })
+        
+        const result = spawn('python3', ['./aidata/testQuiz.py', keyword.keywordName]);
 
-    const result = spawn('python3', ['./aidata/testQuiz.py', text]);
+        result.stdout.on('data', (data) => {
+            // 받아온 데이터는 Buffer 형식이므로 문자열로 변환
+        const jsonString = data.toString();
 
-    result.stdout.on('data', (data) => {
-        // 받아온 데이터는 Buffer 형식이므로 문자열로 변환
-    const jsonData = data.toString();
-    console.log(`jsonData: ${jsonData}`);
-    res.status(200).json({
-        "message": "aiQuiz create success"
+        const jsonData = JSON.parse(jsonString.replace(/'/g, '"'));
+
+        AiQuiz.create({
+            quizContent: jsonData.question,
+            keywordId: keywordId.keywordId,
+            answ: {
+                answ_1: jsonData.options[0],
+                answ_2: jsonData.options[1],
+                answ_3: jsonData.options[2],
+                answ_4: jsonData.options[3]
+            },
+            r_answ: jsonData.answer,
+            quizType: 0,
+            userAssessment: 1
+        })
+        .then(aiQuiz => {
+            res.status(200).json({
+                aiQuiz
+            })
+        })
+        .catch(error => {
+            console.log(error);
+            res.status(500).json({
+                "message": "Internal server error"
+            })
+        })
     })
-})
-    result.stderr.on('data', (data) => {
-        console.error(`stderr: ${data}`);
-    });
+        // 파이썬 오류
+        result.stderr.on('data', (data) => {
+            console.error(`stderr: ${data}`);
+        });
+    } catch(err) {
+        console.log(err);
+        res.status(500).json({
+            "message": "Internal server error"
+        })
+    }
 }
 
 //관리자용
@@ -242,6 +321,7 @@ const auth_quizDelete = (req, res) => {
 module.exports = {
     testSolve,
     testNext,
+    checkLog,
     aiQuiz_create,
     auth_quizList,
     auth_quizView,

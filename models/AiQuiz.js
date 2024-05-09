@@ -45,7 +45,7 @@ const AiQuiz = sequelize.define('AiQuiz', {
     },
     answ: {
         type: DataTypes.JSON,
-        allowNull: false
+        allowNull: true
     },
     r_answ: {
         type: DataTypes.STRING,
@@ -53,7 +53,7 @@ const AiQuiz = sequelize.define('AiQuiz', {
     },
     wrgAnsw_explanation: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: true
     },
     quizType: {
         type: DataTypes.INTEGER,

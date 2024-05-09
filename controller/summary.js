@@ -11,6 +11,17 @@ function getCurrentDateTime() {
     return currentDate.toISOString().slice(0, 19).replace('T', ' ');
   }
 
+  // 키워드 추출
+function extractKeywords(text) {
+return text.split(''); // 단어가 아닌 한 글자씩 나눔
+}
+
+// 두 배열 간의 공통 요소 비율 계산
+function calculateSimilarity(arr1, arr2) {
+    const commonKeywords = arr1.filter(word => arr2.includes(word));
+    return commonKeywords.length / Math.max(arr1.length, arr2.length);
+}
+
 const summaryCreate = (req, res) => { //요약본 생성
     const { text } = req.body;
 
@@ -95,35 +106,115 @@ const summaryQuiz_create = async (req, res) => {
             quizType: quizType
         }
         const inputJson = JSON.stringify(userInput);
-        const result = spawn('python3', ['./aidata/summaryQuiz.py', inputJson]);
+        let f_python = './aidata/summaryQuiz_2.py';
+        if(quizType === 0){
+            f_python = './aidata/summaryQuiz.py'
+        }
+        const result = spawn('python3', [f_python, inputJson]);
+
+        const quizDataArray = []; // 생성된 퀴즈 데이터를 저장할 배열
 
         result.stdout.on('data', (data) => {
-            const jsonData = data.toString();
-            //생성문제 db 저장
-            // for(i = 0 ; i < quizNum ; i++){
-            //     if(quizType === 0){ //객관식
-            //         AiQuiz.create({
-            //             summaryId: summaryId,
-            //             quizContent: jsonData[i].question,
-            //             answ: Sequelize.literal(`JSON_SET(answ, "$.answ_1", ${jsonData[i].options[0]}, "$.answ_2", ${jsonData[i].options[1]}, "$.answ_3", ${jsonData[i].options[2]}, "$.answ_4", ${jsonData[i].options[3]})`),
-            //             r_answ: jsonData[i].answ,
-            //             quizType: quizType,
-            //             userAssessment: 0
-            //         })
-            //     } else if(quizType === 1){ //주관식
-
-            //     } else { //ox 
-
-            //     }
-            // }
-            res.status(200).json({
-                jsonData
-            })
+            const jsonString = data.toString();
+            const jsonData = JSON.parse(jsonString.replace(/'/g, '"'));
+            // 생성문제 db 저장
+            for (let i = 0; i < quizNum; i++) {
+                if (quizType === 0) { // 객관식
+                    AiQuiz.create({
+                        summaryId: summaryId,
+                        quizContent: jsonData[i].question,
+                        answ: {
+                            answ_1: jsonData[i].options[0],
+                            answ_2: jsonData[i].options[1],
+                            answ_3: jsonData[i].options[2],
+                            answ_4: jsonData[i].options[3]
+                        },
+                        r_answ: jsonData[i].answer,
+                        quizType: quizType,
+                        userAssessment: 1
+                    })
+                    .then(quizData => {
+                        quizDataArray.push(quizData); // 생성된 퀴즈 데이터를 배열에 추가
+                        console.log(`aiQuiz save success`);
+        
+                        if (quizDataArray.length === quizNum) {
+                            res.status(200).json({
+                                "quizData": quizDataArray
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.log(error);
+                        res.status(500).json({
+                            "message": "Internal server error"
+                        })
+                    })
+                } else { // 주관식
+                    AiQuiz.create({
+                        summaryId: summaryId,
+                        quizContent: jsonData[i].question,
+                        r_answ: jsonData[i].answer,
+                        quizType: quizType,
+                        userAssessment: 1
+                    })
+                    .then(quizData => {
+                        quizDataArray.push(quizData); // 생성된 퀴즈 데이터를 배열에 추가
+                        console.log(`aiQuiz save success`);
+        
+                        if (quizDataArray.length === quizNum) {
+                            res.status(200).json({
+                                "quizData": quizDataArray
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.log(error);
+                        res.status(500).json({
+                            "message": "Internal server error"
+                        })
+                    })
+                }
+            }
         })
 
         result.stderr.on('data', (data) => {
             console.error(`stderr: ${data}`);
         });
+    }
+}
+
+const summary_grading = async (req, res) => {
+    const { userAnsw, quizId } = req.body;
+
+    try {
+        const c_answ = await AiQuiz.findOne({
+            where: {
+                quizId: quizId
+            },
+            attributes: [ 'r_answ' ]
+        })
+
+        // 키워드 추출
+        const userKeywords = extractKeywords(userAnsw);
+        const correctKeywords = extractKeywords(c_answ.r_answ);
+
+        // 유사도 계산
+        const similarity = calculateSimilarity(userKeywords, correctKeywords);
+        console.log('유사도:', similarity);
+
+        let is_correct = false;
+        if(similarity >= 0.7) {
+            is_correct = true;
+        }
+
+        res.status(200).json({
+            is_correct
+        })
+    } catch(err) {
+        console.log(err);
+        res.status(500).json({
+            "message": "Internal server error"
+        })
     }
 }
 
@@ -248,6 +339,7 @@ module.exports = {
     summaryCreate,
     noteCreate,
     summaryQuiz_create,
+    summary_grading,
     summary_listView,
     summaryView,
     summaryUpdate,
