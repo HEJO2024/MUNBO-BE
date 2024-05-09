@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { testSolve, testNext, checkLog, aiQuiz_create } = require('../controller/quiz');
+const { testSolve, testNext, checkLog, aiQuiz_create, updateAssessment } = require('../controller/quiz');
 const {authenticateAccessToken} = require('../middlewares/index'); //사용자 인증 모듈
 
 // 진단평가
@@ -14,7 +14,7 @@ router.get('/check_quizLog', authenticateAccessToken, checkLog);
 router.get('/ai_solve',authenticateAccessToken, aiQuiz_create); //문제 풀이(키워드 세션 설정)
 router.post('/ai_save', );
 router.delete('/ai_delete', );
-router.post('/ai_assessment', ); // userAssessment
+router.post('/ai_assessment', updateAssessment); // userAssessment
 
 // 저장 문제
 router.get('/note/view', );

@@ -194,6 +194,42 @@ const aiQuiz_create = async (req, res) => {
     }
 }
 
+const updateAssessment = (req, res) => {
+    const { userAssessment, quizId } = req.body;
+
+    try {
+        if(userAssessment === false){
+            AiQuiz.update({
+                userAssessment: userAssessment
+            }, {
+                where: {
+                    quizId: quizId
+                }
+            })
+            .then(assessment => {
+                res.status(200).json({
+                    "message": "userAssessment reflect success"
+                })
+            })
+            .catch(error => {
+                console.log(error);
+                res.status(500).json({
+                    "message": "Internal server error"
+                })
+            })
+        } else{
+            res.status(200).json({
+                "message": "There is no need to reflect user evaluation"
+            })
+        }
+    } catch(err) {
+        console.log(err);
+        res.status(500).json({
+            "message": "Internal server error"
+        })
+    }
+}
+
 //관리자용
 const auth_quizList = async (req, res) => {
     const { subjectId }  = req.query;
@@ -323,6 +359,7 @@ module.exports = {
     testNext,
     checkLog,
     aiQuiz_create,
+    updateAssessment,
     auth_quizList,
     auth_quizView,
     auth_quizUpdate,
