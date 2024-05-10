@@ -114,13 +114,13 @@ const summaryQuiz_create = async (req, res) => {
 
         const quizDataArray = []; // 생성된 퀴즈 데이터를 저장할 배열
 
-        result.stdout.on('data', (data) => {
+        result.stdout.on('data', async (data) => {
             const jsonString = data.toString();
             const jsonData = JSON.parse(jsonString.replace(/'/g, '"'));
             // 생성문제 db 저장
             for (let i = 0; i < quizNum; i++) {
                 if (quizType === 0) { // 객관식
-                    AiQuiz.create({
+                    await AiQuiz.create({
                         summaryId: summaryId,
                         quizContent: jsonData[i].question,
                         answ: {
@@ -150,7 +150,7 @@ const summaryQuiz_create = async (req, res) => {
                         })
                     })
                 } else { // 주관식
-                    AiQuiz.create({
+                    await AiQuiz.create({
                         summaryId: summaryId,
                         quizContent: jsonData[i].question,
                         r_answ: jsonData[i].answer,
