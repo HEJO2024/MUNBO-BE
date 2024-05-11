@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { testSolve, testNext, checkLog, aiQuiz_create, updateAssessment } = require('../controller/quiz');
+const { testSolve, testNext, checkLog, aiQuiz_create, aiQuiz_save, aiQuiz_delete, updateAssessment, aiQuiz_view } = require('../controller/quiz');
 const {authenticateAccessToken} = require('../middlewares/index'); //사용자 인증 모듈
 
 // 진단평가
@@ -10,14 +10,13 @@ router.get('/test_next', authenticateAccessToken, testNext);
 // 진단평가 풀이 여부 확인
 router.get('/check_quizLog', authenticateAccessToken, checkLog); 
 
-// ai 생성퀴즈(오답 기반)
+// ai문제 생성 및 풀이(1번 기능: 오답 기반)
 router.get('/ai_solve',authenticateAccessToken, aiQuiz_create); //문제 풀이(키워드 세션 설정)
-router.post('/ai_save', );
-router.delete('/ai_delete', );
-router.post('/ai_assessment', updateAssessment); // userAssessment
+router.post('/ai_assessment', updateAssessment);
 
 // 저장 문제
-router.get('/note/view', );
-router.delete('/note/delete', );
+router.post('/ai_save', authenticateAccessToken, aiQuiz_save);
+router.get('/note/view', authenticateAccessToken, aiQuiz_view);
+router.delete('/note/ai_delete', aiQuiz_delete);
 
 module.exports = router;

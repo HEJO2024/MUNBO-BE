@@ -3,7 +3,8 @@ const UserSolveRecord = require('../models/UserSolveRecord');
 const Round = require('../models/Round');
 const Keyword = require('../models/Keyword');
 const AiQuiz = require('../models/AiQuiz');
-const Sequelize = require('sequelize');
+const QuizNote = require('../models/QuizNote');
+const {Sequelize, Op} = require('sequelize');
 const { watchFile } = require('fs');
 const { json } = require('body-parser');
 const spawn = require('child_process').spawn;
@@ -194,6 +195,75 @@ const aiQuiz_create = async (req, res) => {
     }
 }
 
+const aiQuiz_save = async (req, res) => {
+    const { quizId } = req.body;
+
+    try{
+        const aiQuiz = await AiQuiz.findOne({
+            where: {
+                quizId: quizId,
+                keywordId: {
+                    [Sequelize.Op.ne]: null // not equal: 해당 값과 같지 않은 경우 검색(즉, keywordId 값이 null이 아닌 경우)
+                }
+            }
+        })
+
+        let is_summary = false
+        if(!aiQuiz){ //summaryId 존재하는 경우
+            is_summary = true;
+        }
+
+        await QuizNote.create({
+            quizId: quizId,
+            userId: req.userId,
+            is_summary: is_summary
+        })
+        .then(quizNote => {
+            res.status(200).json({
+                "message": "quiz note save success"
+            })
+        })
+        .catch(error => {
+            console.log(error);
+            res.status(500).json({
+                "message": "Internal server error"
+            })
+        })
+    } catch(err) {
+        console.log(err);
+        res.status(500).json({
+            "message": "Internal server error"
+        })
+    }
+}
+
+const aiQuiz_delete = (req, res) => {
+    const { noteId } = req.body;
+
+    QuizNote.destroy({
+        where: {
+            noteId: noteId
+        }
+    })
+    .then(quizNote => {
+        if(quizNote){
+            res.status(200).json({
+                "message": "Note delete success"
+            })
+        } else {
+            res.status(404).json({
+                "message": "Note to delete does not exist"
+            })
+        }
+    })
+    .catch(err => {
+        console.log(err);
+        res.status(500).json({
+            "message": "Internal server error"
+        })
+    })
+}
+
 const updateAssessment = (req, res) => {
     const { userAssessment, quizId } = req.body;
 
@@ -222,6 +292,42 @@ const updateAssessment = (req, res) => {
                 "message": "There is no need to reflect user evaluation"
             })
         }
+    } catch(err) {
+        console.log(err);
+        res.status(500).json({
+            "message": "Internal server error"
+        })
+    }
+}
+
+const aiQuiz_view = async (req, res) => {
+    try {
+        const note = await QuizNote.findAll({
+            where: {
+                userId: req.userId
+            },
+            attributes: ['quizId']
+        })
+
+        let quizData = [];
+        for(let i = 0 ; i < note.length ; i++){
+            let quizs = await AiQuiz.findOne({
+                where: {
+                    quizId: note[i].quizId
+                }
+            })
+            let quiz = {
+                quizId: quizs.quizId,
+                quizContent: quizs.quizContent,
+                answ: quizs.answ,
+                r_answ: quizs.r_answ,
+                wrgAnsw_explanation: quizs.wrgAnsw_explanation
+            }
+            quizData.push(quiz);
+        }
+        res.status(200).json({
+            quizData
+        })
     } catch(err) {
         console.log(err);
         res.status(500).json({
@@ -359,7 +465,10 @@ module.exports = {
     testNext,
     checkLog,
     aiQuiz_create,
+    aiQuiz_save,
+    aiQuiz_delete,
     updateAssessment,
+    aiQuiz_view,
     auth_quizList,
     auth_quizView,
     auth_quizUpdate,
