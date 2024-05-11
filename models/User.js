@@ -31,7 +31,7 @@ const User = sequelize.define('User', {
         allowNull: false
     },
     is_admin: {
-        type: DataTypes.TINYINT,
+        type: DataTypes.TINYINT(1),
         allowNull: false
     }
 }, {

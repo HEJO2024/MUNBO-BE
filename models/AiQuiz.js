@@ -60,7 +60,7 @@ const AiQuiz = sequelize.define('AiQuiz', {
         allowNull: false
     },
     userAssessment: {
-        type: DataTypes.TINYINT,
+        type: DataTypes.TINYINT(1),
         allowNull: false
     }
 }, {

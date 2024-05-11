@@ -4,7 +4,7 @@ const Round = require('../models/Round');
 const Keyword = require('../models/Keyword');
 const AiQuiz = require('../models/AiQuiz');
 const QuizNote = require('../models/QuizNote');
-const {Sequelize, Op} = require('sequelize');
+const {Sequelize, Op, where} = require('sequelize');
 const { watchFile } = require('fs');
 const { json } = require('body-parser');
 const spawn = require('child_process').spawn;
@@ -61,36 +61,52 @@ const testNext = async (req, res) => {
     const { quizId, userAnsw, is_correct } = req.query;
 
     try {
-        await UserSolveRecord.create({
-            userId: req.userId,
-            quizId: quizId,
-            userAnsw: userAnsw,
-            is_correct: is_correct
-        })
-        .then(async record => {
-            const quizData = await Quiz.findOne({
-                where: {
-                    quizId: req.session.solveQuiz[req.session.quizIndex]
-                },
-                attributes: ['quizId', 'quizContent', 'answ_1', 'answ_2', 'answ_3', 'answ_4', 'r_answ', 'wrgAnsw_explanation']
-            })
-            let lastQuiz = false;
-            if(req.session.quizIndex === (req.session.solveQuiz.length - 1)){ //마지막 문제일 때
-                lastQuiz = true;
-            } else {
-                req.session.quizIndex++;
+        const userRecord = await UserSolveRecord.findOne({
+            where: {
+                quizId: quizId,
+                userId: req.userId
             }
-            console.log(`quizIndex: ${req.session.quizIndex}`);
-            res.status(200).json({
-                quizData,
-                "lastQuiz": lastQuiz
+        })
+        let record;
+        if(!userRecord){
+            record = await UserSolveRecord.create({
+                userId: req.userId,
+                quizId: quizId,
+                userAnsw: userAnsw,
+                is_correct: is_correct
             })
+        } else {
+            console.log(`solve record update success!`);
+            record = await UserSolveRecord.update({
+                userAnsw: userAnsw,
+                is_correct: is_correct
+            }, {
+                where: {
+                    recordId: userRecord.recordId
+                }
+            })
+        }
+
+        console.log(`array: ${req.session.solveQuiz}`);
+        console.log(`index: ${req.session.quizIndex}`);
+
+        const quizData = await Quiz.findOne({
+            where: {
+                quizId: req.session.solveQuiz[req.session.quizIndex]
+            }
         })
-        .catch(error => {
-            console.log(error);
-        res.status(500).json({
-            "message": "Internal server error"
-        })
+
+        let lastQuiz = false;
+        if(req.session.quizIndex === (req.session.solveQuiz.length - 1)){ //마지막 문제일 때
+            lastQuiz = true;
+        } else {
+            req.session.quizIndex++;
+        }
+
+        console.log(`quizIndex: ${req.session.quizIndex}`);
+        res.status(200).json({
+            quizData,
+            lastQuiz
         })
     } catch(err) {
         console.log(err);
@@ -123,7 +139,6 @@ const checkLog = async (req, res) => {
 }
 
 const aiQuiz_create = async (req, res) => {
-    const text  = "객체" //오답 기록에서 찾기
     // 오답 기록에서 키워드 추출
     try {
         var w_quiz = await UserSolveRecord.findOne({ //오답 퀴즈 추출

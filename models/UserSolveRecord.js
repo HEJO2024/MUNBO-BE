@@ -43,7 +43,7 @@ const UserSolveRecord = sequelize.define('UserSolveRecord', {
         allowNull: false
     },
     is_correct: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.TINYINT(1),
         allowNull: false
     }
 }, {

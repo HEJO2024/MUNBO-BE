@@ -38,7 +38,7 @@ const QuizNote = sequelize.define('QuizNote', {
         }
     },
     is_summary: {
-        type: DataTypes.TINYINT,
+        type: DataTypes.TINYINT(1),
         allowNull: false
     }
 }, {
