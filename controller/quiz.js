@@ -30,7 +30,8 @@ const testSolve = async (req, res) => {
         try{
             let quizData = await Quiz.findOne({
                 where: {
-                    quizId: req.session.solveQuiz[req.session.quizIndex]
+                    // quizId: req.session.solveQuiz[req.session.quizIndex]
+                    quizId: 47
                 },
                 attributes: ['quizId', 'quizImg', 'quizContent', 'answ_1', 'answ_2', 'answ_3', 'answ_4', 'r_answ', 'wrgAnsw_explanation' ]
             })
@@ -323,29 +324,39 @@ const updateAssessment = (req, res) => {
 }
 
 const aiQuiz_view = async (req, res) => {
+    const { is_summary } = req.query;
+
+    let is_sum = 0;
+    if(is_summary != 0){
+        is_sum = 1;
+    }
+
     try {
-        const note = await QuizNote.findAll({
+        const notes = await QuizNote.findAll({
             where: {
-                userId: req.userId
+                userId: req.userId,
+                is_summary: is_sum
             },
             attributes: ['quizId']
         })
 
         let quizData = [];
-        for(let i = 0 ; i < note.length ; i++){
-            let quizs = await AiQuiz.findOne({
-                where: {
-                    quizId: note[i].quizId
-                }
-            })
-            let quiz = {
-                quizId: quizs.quizId,
-                quizContent: quizs.quizContent,
-                answ: quizs.answ,
-                r_answ: quizs.r_answ,
-                wrgAnsw_explanation: quizs.wrgAnsw_explanation
+        for(let i = 0 ; i < notes.length ; i++){
+
+            if(is_summary != 0){
+                const quizs = await AiQuiz.findOne({
+                    quizId: notes[i].quizId,
+                    summaryId: is_summary
+                })
+                console.log(`quiz: ${quizs.quizId}`);
+                quizData.push(quizs);
+            } else {
+                const quiz = await AiQuiz.findOne({
+                    quizId: notes[i].quizId
+                })
+                quizData.push(quiz);
             }
-            quizData.push(quiz);
+
         }
         res.status(200).json({
             quizData
