@@ -2,6 +2,8 @@ const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors');
 const session = require('express-session');
+const bodyParser = require('body-parser');
+const path = require('path');
 
 dotenv.config();
 
@@ -14,8 +16,11 @@ app.use(session({
   saveUninitialized: true
 }));
 
+app.use(bodyParser.urlencoded({ extended: false }));
+
 // 미들웨어
 app.use(express.json());
+app.use(express.static("public"));
 
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');

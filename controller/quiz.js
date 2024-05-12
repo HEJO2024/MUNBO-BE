@@ -8,6 +8,7 @@ const {Sequelize, Op, where} = require('sequelize');
 const { watchFile } = require('fs');
 const { json } = require('body-parser');
 const spawn = require('child_process').spawn;
+const fs = require('fs');
 
 const testSolve = async (req, res) => {
     req.session.solveQuiz = [];
@@ -24,22 +25,26 @@ const testSolve = async (req, res) => {
             });
             req.session.solveQuiz.push(...quizzes.map(quiz => quiz.quizId)); // 선택된 퀴즈의 quizId만 배열에 추가
         }
+
         console.log(`req.session.solveQuiz create`);
         try{
             const quizData = await Quiz.findOne({
                 where: {
                     // quizId: req.session.solveQuiz[req.session.quizIndex]
-                    quizId: 44
+                    quizId: 49
                 },
-                attributes: ['quizId', 'quizContent', 'answ_1', 'answ_2', 'answ_3', 'answ_4', 'r_answ', 'wrgAnsw_explanation' ]
+                attributes: ['quizId', 'quizImg', 'quizContent', 'answ_1', 'answ_2', 'answ_3', 'answ_4', 'r_answ', 'wrgAnsw_explanation' ]
             })
             req.session.quizIndex++;
+            const img = `http:3.38.5.34:3000` + `${quizData.quizImg}`
+
             if(!quizData){
                 res.status(404).json({
                     "message": "there is no quiz"
                 })
             } else {
                 res.status(200).json({
+                    img,
                     quizData,
                     "lastQuiz": false
                 })
