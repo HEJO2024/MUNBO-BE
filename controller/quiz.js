@@ -28,7 +28,8 @@ const testSolve = async (req, res) => {
         try{
             const quizData = await Quiz.findOne({
                 where: {
-                    quizId: req.session.solveQuiz[req.session.quizIndex]
+                    // quizId: req.session.solveQuiz[req.session.quizIndex]
+                    quizId: 44
                 },
                 attributes: ['quizId', 'quizContent', 'answ_1', 'answ_2', 'answ_3', 'answ_4', 'r_answ', 'wrgAnsw_explanation' ]
             })
