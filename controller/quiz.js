@@ -5,10 +5,10 @@ const Keyword = require('../models/Keyword');
 const AiQuiz = require('../models/AiQuiz');
 const QuizNote = require('../models/QuizNote');
 const {Sequelize, Op, where} = require('sequelize');
+const Subject = require('../models/Subject');
 const { watchFile } = require('fs');
 const { json } = require('body-parser');
 const spawn = require('child_process').spawn;
-const fs = require('fs');
 
 const testSolve = async (req, res) => {
     req.session.solveQuiz = [];
@@ -30,8 +30,7 @@ const testSolve = async (req, res) => {
         try{
             let quizData = await Quiz.findOne({
                 where: {
-                    // quizId: req.session.solveQuiz[req.session.quizIndex]
-                    quizId: 47
+                    quizId: req.session.solveQuiz[req.session.quizIndex]
                 },
                 attributes: ['quizId', 'quizImg', 'quizContent', 'answ_1', 'answ_2', 'answ_3', 'answ_4', 'r_answ', 'wrgAnsw_explanation' ]
             })
@@ -75,9 +74,8 @@ const testNext = async (req, res) => {
                 userId: req.userId
             }
         })
-        let record;
         if(!userRecord){
-            record = await UserSolveRecord.create({
+            await UserSolveRecord.create({
                 userId: req.userId,
                 quizId: quizId,
                 userAnsw: userAnsw,
@@ -85,7 +83,7 @@ const testNext = async (req, res) => {
             })
         } else {
             console.log(`solve record update success!`);
-            record = await UserSolveRecord.update({
+            await UserSolveRecord.update({
                 userAnsw: userAnsw,
                 is_correct: is_correct
             }, {
@@ -157,15 +155,16 @@ const aiQuiz_create = async (req, res) => {
             attributes: [ 'quizId' ],
             order: Sequelize.literal('rand()') // 랜덤하게 순서 정한 뒤 하나 추출
         })
+
         console.log(`w_quiz: ${w_quiz.quizId}`);
-        w_quiz = 9; // 삭제할 부분
+
         var keywordId = await Quiz.findOne({ //해당 오답의 키워드 PK 추출
             where: {
-                quizId: w_quiz
+                quizId: w_quiz.quizId
             },
             attributes: [ 'keywordId' ]
         })
-        // keywordId.keywordId = 45;
+
         const keyword = await Keyword.findOne({
             where: {
                 keywordId: keywordId.keywordId
@@ -194,7 +193,19 @@ const aiQuiz_create = async (req, res) => {
             quizType: 0,
             userAssessment: 1
         })
-        .then(aiQuiz => {
+        .then(ai_quiz => {
+            const aiQuiz = [{
+                quizId: ai_quiz.quizId,
+                quizContent: ai_quiz.quizContent,
+                answ: {
+                    answ_1: ai_quiz.answ.answ_1,
+                    answ_2: ai_quiz.answ.answ_2,
+                    answ_3: ai_quiz.answ.answ_3,
+                    answ_4: ai_quiz.answ.answ_4
+                },
+                r_answ: ai_quiz.r_answ,
+                keywordId: ai_quiz.keywordId
+            }]
             res.status(200).json({
                 aiQuiz
             })
@@ -325,47 +336,33 @@ const updateAssessment = (req, res) => {
 
 const aiQuiz_view = async (req, res) => {
     const { is_summary } = req.query;
-
     let is_sum = 0;
-    if(is_summary != 0){
+
+    if (is_summary != 0) {
         is_sum = 1;
     }
 
     try {
-        const notes = await QuizNote.findAll({
+        const quizIds = await QuizNote.findAll({
             where: {
                 userId: req.userId,
                 is_summary: is_sum
             },
             attributes: ['quizId']
-        })
+        });
 
-        let quizData = [];
-        for(let i = 0 ; i < notes.length ; i++){
+        const quizData = await AiQuiz.findAll({
+            where: {
+                quizId: quizIds.map(quizId => quizId.quizId),
+                ...(is_summary != 0 && { summaryId: is_summary }) // is_summary가 0이 아닌 경우에만 summaryId 조건 추가
+            },
+            attributes: ['quizId', 'quizContent', 'answ', 'r_answ', 'quizType', 'userAssessment', 'keywordId', 'summaryId']
+        });
 
-            if(is_summary != 0){
-                const quizs = await AiQuiz.findOne({
-                    quizId: notes[i].quizId,
-                    summaryId: is_summary
-                })
-                console.log(`quiz: ${quizs.quizId}`);
-                quizData.push(quizs);
-            } else {
-                const quiz = await AiQuiz.findOne({
-                    quizId: notes[i].quizId
-                })
-                quizData.push(quiz);
-            }
-
-        }
-        res.status(200).json({
-            quizData
-        })
-    } catch(err) {
-        console.log(err);
-        res.status(500).json({
-            "message": "Internal server error"
-        })
+        res.status(200).json({ quizData });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ "message": "Internal server error" });
     }
 }
 
@@ -493,6 +490,27 @@ const auth_quizDelete = (req, res) => {
     })
 }
 
+const auth_userAssessment = async (req, res) => {
+    try{
+        const assessmentInfo = await AiQuiz.findAll({
+
+        })
+    } catch(err){
+        console.log(err);
+        res.status(500).json({
+            "message": "Internal server error"
+        })
+    }
+}
+
+const auth_viewRate = async (req, res) => {
+    const subjects = await Subject.findAll({
+        attributes: ['subjectId']
+    })
+
+    
+}
+
 module.exports = {
     testSolve,
     testNext,
@@ -505,5 +523,7 @@ module.exports = {
     auth_quizList,
     auth_quizView,
     auth_quizUpdate,
-    auth_quizDelete
+    auth_quizDelete,
+    auth_userAssessment,
+    auth_viewRate
 }

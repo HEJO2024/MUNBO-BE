@@ -64,20 +64,38 @@ const summaryCreate = (req, res) => { //요약본 생성
 const noteCreate = (req, res) => {
     const { summaryId, summaryTitle } = req.body;
 
-    SummaryNote.create({
-        summaryId: summaryId,
-        userId: req.userId,
-        summaryTitle: summaryTitle,
-        summaryDate: getCurrentDateTime()
+    SummaryNote.findOne({
+        where: {
+            summaryId: summaryId
+        }
     })
-    .then(summary => {
-        res.status(200).json({
-            "message": "summaryText save success"
+    .then(existingNote => {
+        if(existingNote){
+            res.status(200).json({
+                "message": "summary note already exists"
+            })
+        } else {
+            SummaryNote.create({
+                summaryId: summaryId,
+                userId: req.userId,
+                summaryTitle: summaryTitle,
+                summaryDate: getCurrentDateTime()
+            })
+            .then(summary => {
+                res.status(200).json({
+                    "message": "summary note save success"
+                });
+            })
+            .catch(err => {
+                res.status(500).json({
+                    "message": "summary note save failed"
+                });
         })
-    })
+    }})
     .catch(err => {
+        console.log(err);
         res.status(500).json({
-            "message": "summaryText save failed"
+            "message": "Internal server error"
         })
     })
 }

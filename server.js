@@ -20,7 +20,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 
 // 미들웨어
 app.use(express.json());
-app.use(express.static("public"));
+app.use(express.static('public'));
 
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
