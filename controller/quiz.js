@@ -28,7 +28,7 @@ const testSolve = async (req, res) => {
 
         console.log(`req.session.solveQuiz create`);
         try{
-            const quizData = await Quiz.findOne({
+            let quizData = await Quiz.findOne({
                 where: {
                     // quizId: req.session.solveQuiz[req.session.quizIndex]
                     quizId: 49
@@ -36,7 +36,7 @@ const testSolve = async (req, res) => {
                 attributes: ['quizId', 'quizImg', 'quizContent', 'answ_1', 'answ_2', 'answ_3', 'answ_4', 'r_answ', 'wrgAnsw_explanation' ]
             })
             req.session.quizIndex++;
-            const img = `http:3.38.5.34:3000` + `${quizData.quizImg}`
+            quizData.quizImg = `http://3.38.5.34:3000${quizData.quizImg}`;
 
             if(!quizData){
                 res.status(404).json({
@@ -45,8 +45,7 @@ const testSolve = async (req, res) => {
             } else {
                 res.status(200).json({
                     quizData,
-                    "lastQuiz": false,
-                    "img": `http://3.38.5.34:3000${quizData.quizImg}`
+                    "lastQuiz": false
                 })
             }
         } catch(error){
