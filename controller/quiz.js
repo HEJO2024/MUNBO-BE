@@ -44,9 +44,9 @@ const testSolve = async (req, res) => {
                 })
             } else {
                 res.status(200).json({
-                    img,
                     quizData,
-                    "lastQuiz": false
+                    "lastQuiz": false,
+                    "img": `http://3.38.5.34:3000${quizData.quizImg}`
                 })
             }
         } catch(error){
