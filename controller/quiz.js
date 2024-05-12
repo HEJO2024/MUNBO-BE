@@ -30,13 +30,15 @@ const testSolve = async (req, res) => {
         try{
             let quizData = await Quiz.findOne({
                 where: {
-                    // quizId: req.session.solveQuiz[req.session.quizIndex]
-                    quizId: 49
+                    quizId: req.session.solveQuiz[req.session.quizIndex]
                 },
                 attributes: ['quizId', 'quizImg', 'quizContent', 'answ_1', 'answ_2', 'answ_3', 'answ_4', 'r_answ', 'wrgAnsw_explanation' ]
             })
             req.session.quizIndex++;
-            quizData.quizImg = `http://3.38.5.34:3000${quizData.quizImg}`;
+
+            if(quizData.quizImg){
+                quizData.quizImg = `http://3.38.5.34:3000${quizData.quizImg}`;
+            }
 
             if(!quizData){
                 res.status(404).json({
