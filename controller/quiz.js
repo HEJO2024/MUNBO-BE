@@ -272,11 +272,11 @@ const aiQuiz_save = async (req, res) => {
 }
 
 const aiQuiz_delete = (req, res) => {
-    const { noteId } = req.body;
+    const { quizId } = req.body;
 
     QuizNote.destroy({
         where: {
-            noteId: noteId
+            quizId: quizId
         }
     })
     .then(quizNote => {
