@@ -3,7 +3,7 @@ const router = express.Router();
 const {authenticateAccessToken, authenticateAdmin} = require('../middlewares'); //사용자 인증 모듈
 
 const { authLogin, authListView, authUserUpdate, authUserUpdate_process, authUserDelete } = require('../controller/user');
-const { auth_quizList, auth_quizView, auth_quizUpdate, auth_quizDelete } = require('../controller/quiz');
+const { auth_quizList, auth_quizView, auth_quizUpdate, auth_quizDelete, auth_userAssessment, auth_viewRate } = require('../controller/quiz');
 const { auth_subjectList, auth_subjectView, auth_subjectCreate, auth_subjectUpdate, auth_subjectDelete } = require('../controller/subject');
 const { auth_roundList, auth_roundView, auth_roundCreate, auth_roundUpdate, auth_roundDelete } = require('../controller/round');
 const { auth_keywordList, auth_keywordView, auth_keywordCreate, auth_keywordUpdate, auth_keywordDelete } = require('../controller/keyword');
@@ -56,6 +56,11 @@ keywordRouter.get('/view', auth_keywordView);
 keywordRouter.post('/create', auth_keywordCreate);
 keywordRouter.put('/update', auth_keywordUpdate);
 keywordRouter.delete('/delete', auth_keywordDelete);
+
+//시각화 관리 라우터
+router.get('/userAssessment', auth_userAssessment);
+router.get('/viewRate', auth_viewRate);
+router.get('/viewToken', );
 
 router.use('/users', userRouter);
 router.use('/quiz', quizRouter);

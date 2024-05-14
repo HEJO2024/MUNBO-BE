@@ -15,7 +15,7 @@ router.get('/ai_solve',authenticateAccessToken, aiQuiz_create); //문제 풀이(
 router.post('/ai_assessment', updateAssessment);
 
 // 저장 문제
-router.post('/ai_save', authenticateAccessToken, aiQuiz_save);
+router.post('/note/ai_save', authenticateAccessToken, aiQuiz_save);
 router.get('/note/view', authenticateAccessToken, aiQuiz_view);
 router.delete('/note/ai_delete', aiQuiz_delete);
 
