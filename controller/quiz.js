@@ -9,6 +9,7 @@ const Subject = require('../models/Subject');
 const { watchFile } = require('fs');
 const { json } = require('body-parser');
 const spawn = require('child_process').spawn;
+const fs = require('fs');
 
 const testSolve = async (req, res) => {
     req.session.solveQuiz = [];
@@ -33,14 +34,17 @@ const testSolve = async (req, res) => {
         try{
             let quizData = await Quiz.findOne({
                 where: {
-                    quizId: req.session.solveQuiz[req.session.quizIndex]
+                    // quizId: req.session.solveQuiz[req.session.quizIndex]
+                    quizId: 53
                 }
             })
             req.session.quizIndex++;
 
-            if(quizData.quizImg){
-                quizData.quizImg = `http://3.38.5.34:3000${quizData.quizImg}`;
-            }
+            const file = fs.readFileSync(__dirname + `../${quizData.quizImg}`);
+
+            // if(quizData.quizImg){
+            //     quizData.quizImg = `http://3.38.5.34:3000${quizData.quizImg}`;
+            // }
 
             const keywordName = await Keyword.findOne({
                 where: {
@@ -71,9 +75,12 @@ const testSolve = async (req, res) => {
                 })
             } else {
                 res.status(200).json({
-                    quizData,
-                    "lastQuiz": false
+                    "img": file
                 })
+                // res.status(200).json({
+                //     quizData,
+                //     "lastQuiz": false
+                // })
             }
         } catch(error){
             console.log(error);
@@ -219,14 +226,25 @@ const aiQuiz_create = async (req, res) => {
             },
             attributes: [ 'keywordName', 'keywordMean' ]
         })
+
+        const userInput = {
+            keywordName: keyword.keywordName,
+            keywordMean: keyword.keywordMean
+        }
+        console.log(`keywordName: ${keyword.keywordName}`);
+        console.log(`keywordMean: ${keyword.keywordMean}`);
+    
+        const inputJson = JSON.stringify(userInput);
         
-        const result = spawn('python', ['./aidata/testQuiz.py', keyword.keywordName]);
+        const result = spawn('python', ['./aidata/testQuiz_2.py', inputJson]);
 
         result.stdout.on('data', (data) => {
             // 받아온 데이터는 Buffer 형식이므로 문자열로 변환
         const jsonString = data.toString();
-
         const jsonData = JSON.parse(jsonString.replace(/'/g, '"'));
+        // const jsonData = JSON.parse(jsonString);
+
+        console.log(jsonData);
 
         AiQuiz.create({
             quizContent: jsonData.question,
@@ -239,7 +257,8 @@ const aiQuiz_create = async (req, res) => {
             },
             r_answ: jsonData.answer,
             quizType: 0,
-            userAssessment: 1
+            userAssessment: 1,
+            wrgAnsw_explanation: jsonData.explanation
         })
         .then(ai_quiz => {
             let aiQuiz = [{
@@ -253,7 +272,8 @@ const aiQuiz_create = async (req, res) => {
                 },
                 r_answ: ai_quiz.r_answ,
                 keywordId: ai_quiz.keywordId,
-                org_quizId: w_quiz.quizId
+                org_quizId: w_quiz.quizId,
+                wrgAnsw_explanation: ai_quiz.wrgAnsw_explanation
             }]
             res.status(200).json({
                 aiQuiz
@@ -599,9 +619,34 @@ const auth_quizDelete = (req, res) => {
 
 const auth_userAssessment = async (req, res) => {
     try{
-        const assessmentInfo = await AiQuiz.findAll({
+        // 전체 컬럼 개수 가져오기
+        AiQuiz.count().then(totalCount => {
+            console.log(`total: ${totalCount}`);
 
-        })
+            AiQuiz.count({
+                where: {
+                    userAssessment: 0
+                }
+            })
+            .then(count => {
+                console.log(`count: ${count}`)
+
+                const assessmentData = {
+                    totalCount: totalCount,
+                    count: count
+                }
+    
+                res.status(200).json({
+                    assessmentData
+                })
+            })
+            .catch(error => {
+                console.log(err);
+                res.status(500).json({
+                    "message": "Internal server error"
+                })
+            })
+        });
     } catch(err){
         console.log(err);
         res.status(500).json({
@@ -611,11 +656,49 @@ const auth_userAssessment = async (req, res) => {
 }
 
 const auth_viewRate = async (req, res) => {
-    const subjects = await Subject.findAll({
-        attributes: ['subjectId']
-    })
+    try{
+        const subjects = await Subject.findAll({
+            attributes: ['subjectId', 'subjectName']
+        })
+        
+        let rateData = [];
+        for(const subjectItem of subjects){
+            const subjectId = subjectItem.subjectId
+            const subjectName = subjectItem.subjectName
 
-    
+            const count = await UserSolveRecord.count({
+                // quizId를 100으로 나눈 나머지에 따라 subjectId 결정
+                where: {
+                    quizId: Sequelize.literal(`quizId % 100 BETWEEN ${(subjectId - 1) * 20 + 1} AND ${subjectId * 20}`)
+                }
+            })
+
+            const wrgCount = await UserSolveRecord.count({
+                // quizId를 100으로 나눈 나머지에 따라 subjectId 결정
+                where: {
+                    quizId: Sequelize.literal(`quizId % 100 BETWEEN ${(subjectId - 1) * 20 + 1} AND ${subjectId * 20}`),
+                    is_correct: 0
+                }
+            })
+
+            rateData.push({
+                subjectId: subjectId,
+                subjectName: subjectName,
+                totalCount: count,
+                wrgCount: wrgCount
+            })
+        }
+
+        res.status(200).json({
+            rateData
+        })
+    } catch(err){
+        console.log(err);
+        res.status(500).json({
+            "message": "Internal server error"
+        })
+    }
+
 }
 
 module.exports = {
