@@ -239,7 +239,8 @@ const aiQuiz_create = async (req, res) => {
             },
             r_answ: jsonData.answer,
             quizType: 0,
-            userAssessment: 1
+            userAssessment: 1,
+            org_quizId: w_quiz.quizId
         })
         .then(ai_quiz => {
             const aiQuiz = [{
