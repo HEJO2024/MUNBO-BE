@@ -220,7 +220,7 @@ const aiQuiz_create = async (req, res) => {
             attributes: [ 'keywordName', 'keywordMean' ]
         })
         
-        const result = spawn('python3', ['./aidata/testQuiz.py', keyword.keywordName]);
+        const result = spawn('python', ['./aidata/testQuiz.py', keyword.keywordName]);
 
         result.stdout.on('data', (data) => {
             // 받아온 데이터는 Buffer 형식이므로 문자열로 변환
@@ -239,11 +239,10 @@ const aiQuiz_create = async (req, res) => {
             },
             r_answ: jsonData.answer,
             quizType: 0,
-            userAssessment: 1,
-            org_quizId: w_quiz.quizId
+            userAssessment: 1
         })
         .then(ai_quiz => {
-            const aiQuiz = [{
+            let aiQuiz = [{
                 quizId: ai_quiz.quizId,
                 quizContent: ai_quiz.quizContent,
                 answ: {
@@ -253,7 +252,8 @@ const aiQuiz_create = async (req, res) => {
                     answ_4: ai_quiz.answ.answ_4
                 },
                 r_answ: ai_quiz.r_answ,
-                keywordId: ai_quiz.keywordId
+                keywordId: ai_quiz.keywordId,
+                org_quizId: w_quiz.quizId
             }]
             res.status(200).json({
                 aiQuiz
@@ -469,6 +469,10 @@ const aiQuiz_view = async (req, res) => {
     }
 }
 
+const image_get = (req, res) => {
+
+}
+
 //관리자용
 const auth_quizList = async (req, res) => {
     const { subjectId }  = req.query;
@@ -624,6 +628,7 @@ module.exports = {
     aiQuiz_delete,
     updateAssessment,
     aiQuiz_view,
+    image_get,
     auth_quizList,
     auth_quizView,
     auth_quizUpdate,
