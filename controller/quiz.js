@@ -13,10 +13,13 @@ const spawn = require('child_process').spawn;
 const testSolve = async (req, res) => {
     req.session.solveQuiz = [];
     req.session.quizIndex = 0;
-    const subjectIds = [1, 2, 3, 4, 5];
+    const subjectIds = await Subject.findAll({
+        attributes: ['subjectId']
+    })
 
     try {
-        for (const subjectId of subjectIds) {
+        for (const subjectItem of subjectIds) {
+            const subjectId = subjectItem.subjectId
             const quizzes = await Quiz.findAll({
                 attributes: ['quizId'], // 기본키인 quizId만 가져오기
                 where: { subjectId }, // subjectId에 따라 필터링
@@ -31,14 +34,36 @@ const testSolve = async (req, res) => {
             let quizData = await Quiz.findOne({
                 where: {
                     quizId: req.session.solveQuiz[req.session.quizIndex]
-                },
-                attributes: ['quizId', 'quizImg', 'quizContent', 'answ_1', 'answ_2', 'answ_3', 'answ_4', 'r_answ', 'wrgAnsw_explanation' ]
+                }
             })
             req.session.quizIndex++;
 
             if(quizData.quizImg){
                 quizData.quizImg = `http://3.38.5.34:3000${quizData.quizImg}`;
             }
+
+            const keywordName = await Keyword.findOne({
+                where: {
+                    keywordId: quizData.keywordId
+                },
+                attributes: ['keywordName']
+            })
+            quizData.keywordId = keywordName.keywordName;
+
+            const roundName = await Round.findOne({
+                where: {
+                    roundId: quizData.roundId
+                },
+                attributes: ['roundName']
+            })
+            quizData.roundId = roundName.roundName;
+
+            const subjectName = await Subject.findOne({
+                where: {
+                    subjectId: quizData.subjectId
+                }
+            })
+            quizData.subjectId = subjectName.subjectName;
 
             if(!quizData){
                 res.status(404).json({
@@ -101,6 +126,29 @@ const testNext = async (req, res) => {
                 quizId: req.session.solveQuiz[req.session.quizIndex]
             }
         })
+
+        const keywordName = await Keyword.findOne({
+            where: {
+                keywordId: quizData.keywordId
+            },
+            attributes: ['keywordName']
+        })
+        quizData.keywordId = keywordName.keywordName;
+
+        const roundName = await Round.findOne({
+            where: {
+                roundId: quizData.roundId
+            },
+            attributes: ['roundName']
+        })
+        quizData.roundId = roundName.roundName;
+
+        const subjectName = await Subject.findOne({
+            where: {
+                subjectId: quizData.subjectId
+            }
+        })
+        quizData.subjectId = subjectName.subjectName;
 
         let lastQuiz = false;
         if(req.session.quizIndex === (req.session.solveQuiz.length - 1)){ //마지막 문제일 때
@@ -221,6 +269,60 @@ const aiQuiz_create = async (req, res) => {
         result.stderr.on('data', (data) => {
             console.error(`stderr: ${data}`);
         });
+    } catch(err) {
+        console.log(err);
+        res.status(500).json({
+            "message": "Internal server error"
+        })
+    }
+}
+
+const aiQuiz_org = async (req, res) => {
+    const { quizId } = req.query;
+
+    try {
+        const quizData = await Quiz.findOne({
+            where: {
+                quizId: quizId
+            }
+        })
+
+        if(!quizData){
+            res.status(404).json({
+                "message": "The quiz data does not exist."
+            })
+        } else {
+            const keywordName = await Keyword.findOne({
+                where: {
+                    keywordId: quizData.keywordId
+                },
+                attributes: ['keywordName']
+            })
+            quizData.keywordId = keywordName.keywordName;
+    
+            const roundName = await Round.findOne({
+                where: {
+                    roundId: quizData.roundId
+                },
+                attributes: ['roundName']
+            })
+            quizData.roundId = roundName.roundName;
+    
+            const subjectName = await Subject.findOne({
+                where: {
+                    subjectId: quizData.subjectId
+                }
+            })
+            quizData.subjectId = subjectName.subjectName;
+
+            if(quizData.quizImg){
+                quizData.quizImg = `http://3.38.5.34:3000${quizData.quizImg}`;
+            }
+
+            res.status(200).json({
+                quizData
+            })
+        }
     } catch(err) {
         console.log(err);
         res.status(500).json({
@@ -516,6 +618,7 @@ module.exports = {
     testNext,
     checkLog,
     aiQuiz_create,
+    aiQuiz_org,
     aiQuiz_save,
     aiQuiz_delete,
     updateAssessment,
