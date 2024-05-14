@@ -34,13 +34,12 @@ const testSolve = async (req, res) => {
         try{
             let quizData = await Quiz.findOne({
                 where: {
-                    // quizId: req.session.solveQuiz[req.session.quizIndex]
-                    quizId: 53
+                    quizId: req.session.solveQuiz[req.session.quizIndex]
                 }
             })
             req.session.quizIndex++;
 
-            const file = fs.readFileSync(__dirname + `../${quizData.quizImg}`);
+            // const file = fs.readFileSync(__dirname + `../${quizData.quizImg}`);
 
             // if(quizData.quizImg){
             //     quizData.quizImg = `http://3.38.5.34:3000${quizData.quizImg}`;
@@ -75,12 +74,9 @@ const testSolve = async (req, res) => {
                 })
             } else {
                 res.status(200).json({
-                    "img": file
+                    quizData,
+                    "lastQuiz": false
                 })
-                // res.status(200).json({
-                //     quizData,
-                //     "lastQuiz": false
-                // })
             }
         } catch(error){
             console.log(error);
@@ -236,7 +232,7 @@ const aiQuiz_create = async (req, res) => {
     
         const inputJson = JSON.stringify(userInput);
         
-        const result = spawn('python', ['./aidata/testQuiz_2.py', inputJson]);
+        const result = spawn('python3', ['./aidata/testQuiz_2.py', inputJson]);
 
         result.stdout.on('data', (data) => {
             // 받아온 데이터는 Buffer 형식이므로 문자열로 변환

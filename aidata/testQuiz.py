@@ -88,7 +88,7 @@ chain = final_prompt | model | parser
 
 # 사용자 입력 값 읽기
 userInput = sys.argv[1]
-# user_input = json.loads(userInput)
+user_input = json.loads(userInput)
 
 #오답 키워드의 내용을 입력
 # text = ["""

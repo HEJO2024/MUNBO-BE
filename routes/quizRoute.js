@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { testSolve, testNext, checkLog, aiQuiz_create, aiQuiz_org, aiQuiz_save, aiQuiz_delete, updateAssessment, aiQuiz_view } = require('../controller/quiz');
+const { testSolve, testNext, checkLog, aiQuiz_create, aiQuiz_org, aiQuiz_save, aiQuiz_delete, updateAssessment, aiQuiz_view, image_get } = require('../controller/quiz');
 const {authenticateAccessToken} = require('../middlewares/index'); //사용자 인증 모듈
 
 // 진단평가
@@ -19,5 +19,8 @@ router.post('/ai_assessment', updateAssessment);
 router.post('/note/ai_save', authenticateAccessToken, aiQuiz_save);
 router.get('/note/view', authenticateAccessToken, aiQuiz_view);
 router.delete('/note/ai_delete', aiQuiz_delete);
+
+// 이미지
+router.get('/image', image_get);
 
 module.exports = router;
