@@ -11,6 +11,32 @@ const { json } = require('body-parser');
 const spawn = require('child_process').spawn;
 const fs = require('fs');
 
+// 파싱 함수
+function parseQuizString(quizString) {
+    const questions = quizString.split('\n\n'); // 각 문제는 빈 줄로 구분됨
+    const quizData = [];
+
+    for (const question of questions) {
+        const lines = question.split('\n');
+        const data = {};
+
+        for (const line of lines) {
+            if (line.startsWith('Q')) {
+                data.question = line;
+            } else if (line.startsWith('A)')) {
+                data.options = data.options || [];
+                data.options.push(line.substring(3)); // 선택지는 'A)', 'B)', ...로 시작하므로 해당 부분을 잘라냄
+            } else if (line.startsWith('Answer:')) {
+                data.answer = line.substring(8).trim(); // 정답은 'Answer:'로 시작하므로 해당 부분을 잘라냄
+            }
+        }
+
+        quizData.push(data);
+    }
+
+    return quizData;
+}
+
 const testSolve = async (req, res) => {
     req.session.solveQuiz = [];
     req.session.quizIndex = 0;
@@ -495,6 +521,8 @@ const aiQuiz_view = async (req, res) => {
         is_sum = 1;
     }
 
+    console.log(`userId: ${req.userId}`)
+
     try {
         const quizIds = await QuizNote.findAll({
             where: {
@@ -508,9 +536,10 @@ const aiQuiz_view = async (req, res) => {
             where: {
                 quizId: quizIds.map(quizId => quizId.quizId),
                 ...(is_summary != 0 && { summaryId: is_summary }) // is_summary가 0이 아닌 경우에만 summaryId 조건 추가
-            },
-            attributes: ['quizId', 'quizContent', 'answ', 'r_answ', 'quizType', 'userAssessment', 'keywordId', 'summaryId']
+            }
         });
+
+        console.log(`quizType: ${quizData[0].quizType}`);
 
         res.status(200).json({
              "quizType": quizData[0].quizType,

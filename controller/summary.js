@@ -5,6 +5,7 @@ const AiQuiz = require('../models/AiQuiz');
 const spawn = require('child_process').spawn;
 const Sequelize = require('sequelize');
 const { json } = require('body-parser');
+const QuizNote = require('../models/QuizNote');
 
 function getCurrentDateTime() {
     const currentDate = new Date();
@@ -241,8 +242,7 @@ const summary_listView = async (req, res) => {
         const summaryList = await SummaryNote.findAll({
             where: {
                 userId: req.userId
-            },
-            attributes: ['noteId', 'summaryTitle', 'summaryDate']
+            }
         });
         res.status(200).json({
             summaryList
@@ -273,6 +273,31 @@ const summaryView = async (req, res) => {
                 attributes: ['summaryText']
             })
 
+            // 저장 문제 존재 여부 확인
+            const aiQuizzes = await AiQuiz.findAll({
+                where: {
+                    summaryId: summaryNote.summaryId
+                },
+                attributes: ['quizId']
+            })
+
+            let is_quizExists = false
+
+            for(const quizItem of aiQuizzes){
+                const quizId = quizItem.quizId
+
+                const quiz = await QuizNote.count({
+                    where: {
+                        quizId: quizId
+                    },
+                    attributes: ['noteId']
+                })
+
+                if(quiz > 0){
+                    is_quizExists = true
+                }
+            }
+
             const summaryData = {
                 noteId: noteId,
                 summaryId: summaryNote.summaryId,
@@ -281,7 +306,8 @@ const summaryView = async (req, res) => {
                 summaryTitle: summaryNote.summaryTitle
             }
             res.status(200).json({
-                summaryData
+                summaryData,
+                "quizExists": is_quizExists
             })
         } catch(error) {
             console.log(error);
