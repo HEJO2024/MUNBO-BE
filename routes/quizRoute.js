@@ -17,7 +17,7 @@ router.post('/ai_assessment', updateAssessment);
 
 // 저장 문제
 router.post('/note/ai_save', authenticateAccessToken, aiQuiz_save);
-router.get('/note/view', authenticateAccessToken, aiQuiz_view);
+router.get('/note/ai_view', authenticateAccessToken, aiQuiz_view);
 router.delete('/note/ai_delete', aiQuiz_delete);
 
 // 이미지
