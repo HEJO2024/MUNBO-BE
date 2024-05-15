@@ -196,96 +196,130 @@ const checkLog = async (req, res) => {
 }
 
 const aiQuiz_create = async (req, res) => {
-    // 오답 기록에서 키워드 추출
     try {
-        var w_quiz = await UserSolveRecord.findOne({ //오답 퀴즈 추출
+        // 오답 기록에서 키워드 추출
+        const w_quiz = await UserSolveRecord.findAll({
             where: {
                 userId: req.userId,
                 is_correct: 0
             },
-            attributes: [ 'quizId' ],
-            order: Sequelize.literal('rand()') // 랜덤하게 순서 정한 뒤 하나 추출
+            attributes: ['quizId']
         })
 
-        console.log(`w_quiz: ${w_quiz.quizId}`);
+        let aiQuiz = [];
 
-        var keywordId = await Quiz.findOne({ //해당 오답의 키워드 PK 추출
-            where: {
-                quizId: w_quiz.quizId
-            },
-            attributes: [ 'keywordId' ]
-        })
-
-        const keyword = await Keyword.findOne({
-            where: {
-                keywordId: keywordId.keywordId
-            },
-            attributes: [ 'keywordName', 'keywordMean' ]
-        })
-
-        const userInput = {
-            keywordName: keyword.keywordName,
-            keywordMean: keyword.keywordMean
-        }
-        console.log(`keywordName: ${keyword.keywordName}`);
-        console.log(`keywordMean: ${keyword.keywordMean}`);
-    
-        const inputJson = JSON.stringify(userInput);
+        (async () => {
+            for (const quizItem of w_quiz) {
+                const quizId = quizItem.quizId;
         
-        const result = spawn('python3', ['./aidata/testQuiz_2.py', inputJson]);
+                const keywordId = await Quiz.findOne({
+                    where: {
+                        quizId: quizId
+                    },
+                    attributes: ['keywordId']
+                });
+        
+                const keyword = await Keyword.findOne({
+                    where: {
+                        keywordId: keywordId.keywordId
+                    }
+                });
 
-        result.stdout.on('data', (data) => {
-            // 받아온 데이터는 Buffer 형식이므로 문자열로 변환
-        const jsonString = data.toString();
-        const jsonData = JSON.parse(jsonString.replace(/'/g, '"'));
-        // const jsonData = JSON.parse(jsonString);
+                let userInput = {
+                    keywordName: keyword.keywordName,
+                    keywordMean: keyword.keywordMean
+                }
 
-        console.log(jsonData);
+                const inputJson = JSON.stringify(userInput);
+        
+                const result = await new Promise((resolve, reject) => {
+                    const process = spawn('python', ['./aidata/testQuiz.py', inputJson]);
+                    process.stdout.on('data', (data) => {
+                        const jsonString = data.toString();
+                        // const jsonData = JSON.parse(jsonString.replace(/'/g, '"'));
+                        resolve(jsonString);
+                    });
+                    process.on('error', reject);
 
-        AiQuiz.create({
-            quizContent: jsonData.question,
-            keywordId: keywordId.keywordId,
-            answ: {
-                answ_1: jsonData.options[0],
-                answ_2: jsonData.options[1],
-                answ_3: jsonData.options[2],
-                answ_4: jsonData.options[3]
-            },
-            r_answ: jsonData.answer,
-            quizType: 0,
-            userAssessment: 1,
-            wrgAnsw_explanation: jsonData.explanation
-        })
-        .then(ai_quiz => {
-            let aiQuiz = [{
-                quizId: ai_quiz.quizId,
-                quizContent: ai_quiz.quizContent,
-                answ: {
-                    answ_1: ai_quiz.answ.answ_1,
-                    answ_2: ai_quiz.answ.answ_2,
-                    answ_3: ai_quiz.answ.answ_3,
-                    answ_4: ai_quiz.answ.answ_4
-                },
-                r_answ: ai_quiz.r_answ,
-                keywordId: ai_quiz.keywordId,
-                org_quizId: w_quiz.quizId,
-                wrgAnsw_explanation: ai_quiz.wrgAnsw_explanation
-            }]
+                    process.stderr.on('data', (data) => {
+                                console.error(`stderr: ${data}`);
+                            });
+                });
+        
+                console.log(`jsonData: ${result}`);
+            }
+        
             res.status(200).json({
-                aiQuiz
-            })
-        })
-        .catch(error => {
-            console.log(error);
-            res.status(500).json({
-                "message": "Internal server error"
-            })
-        })
-    })
-        // 파이썬 오류
-        result.stderr.on('data', (data) => {
-            console.error(`stderr: ${data}`);
-        });
+                "message": "ok"
+            });
+        })();
+
+        // for(const quizItem of w_quiz){
+        //     const quizId = quizItem.quizId
+            
+        //     const keywordId = await Quiz.findOne({
+        //         where: {
+        //             quizId: quizId
+        //         },
+        //         attributes: ['keywordId']
+        //     })
+
+        //     const keyword = await Keyword.findOne({
+        //         where: {
+        //             keywordId: keywordId.keywordId
+        //         }
+        //     })
+        //     console.log(`keyword: ${keyword.keywordMean}`)
+        //     const result = spawn('python', ['./aidata/testQuiz.py', keyword.keywordMean]);
+
+        //     result.stdout.on('data', (data) => {
+        //         const jsonString = data.toString();
+        //         const jsonData = JSON.parse(jsonString.replace(/'/g, '"'));
+
+        //         console.log(`jsonData: ${jsonData}`);
+        //     })
+        // }
+
+        // res.status(200).json({
+        //     "message": "ok"
+        // })
+
+        // const quizId = w_quiz[0].quizId;
+        //     console.log(`quizId: ${quizId}`);
+        //     const keywordId = await Quiz.findOne({
+        //         where: {
+        //             quizId: quizId
+        //         },
+        //         attributes: ['keywordId']
+        //     })
+
+        //     const keyword = await Keyword.findOne({
+        //         where: {
+        //             keywordId: keywordId.keywordId
+        //         },
+        //         attributes: ['keywordName', 'keywordMean']
+        //     })
+
+        //     const result = spawn('python', ['./aidata/testQuiz.py', keyword.keywordMean]);
+
+        //     result.stdout.on('data', (data) => {
+        //         // 받아온 데이터는 Buffer 형식이므로 문자열로 변환
+        //         const jsonString = data.toString();
+        //         const jsonData = JSON.parse(jsonString.replace(/'/g, '"'));
+
+        //         console.log(`data: ${data}`);
+        //         console.log(`jsonData: ${jsonString}`);
+
+        //         // aiQuiz.push(jsonData);
+
+        //         res.status(200).json({
+        //             jsonData
+        //         })
+        //     })
+
+        //     result.stderr.on('data', (data) => {
+        //         console.error(`stderr: ${data}`);
+        //     });
     } catch(err) {
         console.log(err);
         res.status(500).json({
@@ -478,7 +512,10 @@ const aiQuiz_view = async (req, res) => {
             attributes: ['quizId', 'quizContent', 'answ', 'r_answ', 'quizType', 'userAssessment', 'keywordId', 'summaryId']
         });
 
-        res.status(200).json({ quizData });
+        res.status(200).json({
+             "quizType": quizData[0].quizType,
+             quizData
+         });
     } catch (error) {
         console.log(error);
         res.status(500).json({ "message": "Internal server error" });
