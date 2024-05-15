@@ -71,7 +71,7 @@ few_shot_prompt = FewShotChatMessagePromptTemplate(
 # (d) Finally, assemble the final prompt and use it with a model
 final_prompt = ChatPromptTemplate.from_messages(
     [
-        ("system", "You are a teacher teaching students at Korea. You have to make 5 4-choice questions based on the keyword or text I provide you. The quiz must start with the quiz number like Q1 "),
+        ("system", "You are a teacher teaching students at Korea. You have to make 4-choice question based on the keyword or text I provide you. The quiz must start with the quiz number like Q1 "),
         few_shot_prompt,
         ("human", "{input}")
     ]
@@ -88,14 +88,13 @@ chain = final_prompt | model | parser
 
 # 사용자 입력 값 읽기
 userInput = sys.argv[1]
-user_input = json.loads(userInput)
+# user_input = json.loads(userInput)
 
 #오답 키워드의 내용을 입력
 # text = ["""
 # 객체지향
 # """]
 text = userInput
-
 ## Run the chain
 
 made_quiz=chain.invoke({"input": text})
@@ -113,6 +112,7 @@ def convert_to_dict(problem_set):
     if current_problem:
         problems.append(parse_problem(current_problem))
     return problems
+
 
 def parse_problem(lines):
     if lines[0].startswith("Q"):
@@ -133,7 +133,7 @@ def parse_problem(lines):
             options.append(line[2:].strip())
         elif line.startswith("D)"or"D."):
             options.append(line[2:].strip())
-        elif line.startswith("Answer)"or"Answer."or"answer"or"Answer"):
+        elif line.startswith("Answer)"or"Answer."or"answer"or"Answer"or"Answer:"or"answer:"):
             answer = line[7:].strip()
     if question_num:
         question = f"{question_num}: {question_text}"

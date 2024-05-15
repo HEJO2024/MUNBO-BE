@@ -112,53 +112,53 @@ chain = final_prompt | model | parser
 
 # 사용자 입력 값 읽기
 userInput = sys.argv[1]
-user_input = json.loads(userInput)
+# user_input = json.loads(userInput)
 
-text = user_input["keywordMean"]
-keyword = user_input["keywordName"]
+text = userInput
+# text = user_input["keywordMean"]
+# keyword = user_input["keywordName"]
 
 ## Run the chain
 
 made_quiz=chain.invoke({"input": text})
 # print(f'made_quiz: {made_quiz}')
 
-def parse_question_string(question_string):
-    # 문제, 선지, 정답, 해설을 추출
-    lines = question_string.strip().split('\n')
-    # for i, line in enumerate(lines):
-    #     print(f'line[{i}]: {line}')
-    if(len(lines) > 8):
-        return lines, len(lines)
-    question = lines[0]
-    options = [line.strip()[3:] for line in lines[1:5]]
-    answer = lines[5].split('Answer)')[1]
-    explanation = lines[7].split('Explanation: ')[1]
+# def parse_question_string(question_string):
+#     # 문제, 선지, 정답, 해설을 추출
+#     lines = question_string.strip().split('\n')
+#     # for i, line in enumerate(lines):
+#     #     print(f'line[{i}]: {line}')
+#     if(len(lines) > 8):
+#         return lines, len(lines)
+#     question = lines[0]
+#     options = [line.strip()[3:] for line in lines[1:5]]
+#     answer = lines[5].split('Answer)')[1]
+#     explanation = lines[7].split('Explanation: ')[1]
 
-    # JSON 형식으로 변환
-    question_data = {
-        "question": question,
-        "options": options,
-        "answer": answer,
-        "explanation": explanation
-    }
+#     # JSON 형식으로 변환
+#     question_data = {
+#         "question": question,
+#         "options": options,
+#         "answer": answer,
+#         "explanation": explanation
+#     }
 
-    return question_data
+#     return question_data
 
-# def parse_questions(text):
-#     questions = []
-#     question_pattern = re.compile(r"(?:Q\d+: )?(.+?)\n+(?:A[.)] )(.+?)\n+(?:B[.)] )(.+?)\n+(?:C[.)] )(.+?)\n+(?:D[.)] )(.+?)\n+(?:Answer: )(.+?)\n+(?:Explanation: )(.+?)(?=\n+(?:Q\d+: )|$)")
-#     matches = question_pattern.findall(text)
-#     for match in matches:
-#         question = {
-#             "question": match[0],
-#             "options": [match[1], match[2], match[3], match[4]],
-#             "answer": match[5],
-#             "explanation": match[6],
-#             "key": keyword
-#         }
-#         questions.append(question)
-#     return questions
+def parse_questions(text):
+    questions = []
+    question_pattern = re.compile(r"(?:Q\d+: )?(.+?)\n+(?:A[.)] )(.+?)\n+(?:B[.)] )(.+?)\n+(?:C[.)] )(.+?)\n+(?:D[.)] )(.+?)\n+(?:Answer: )(.+?)\n+(?:Explanation: )(.+?)(?=\n+(?:Q\d+: )|$)")
+    matches = question_pattern.findall(text)
+    for match in matches:
+        question = {
+            "question": match[0],
+            "options": [match[1], match[2], match[3], match[4]],
+            "answer": match[5],
+            "explanation": match[6]
+        }
+        questions.append(question)
+    return questions
 
 # quizData = parse_questions(made_quiz)
-quizData = parse_question_string(made_quiz)
+quizData = parse_questions(made_quiz)
 print(quizData)
