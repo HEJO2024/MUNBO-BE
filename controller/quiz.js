@@ -243,22 +243,22 @@ const aiQuiz_create = async (req, res) => {
             })
         }
 
-        let lastQuiz = false;
-        if(req.session.record >= w_quiz.length){ //인덱스 범위 초과 시
-            req.session.record = 0;
-        }
-        if(req.session.record === w_quiz.length){
-            lastQuiz = true;
-        }
-        console.log(`req.session.record: ${req.session.record}`);
-        console.log(`record_length: ${w_quiz.length}`);
-
         const keywordId = await Quiz.findOne({ // 퀴즈에서 키워드 아이디 추출
             where: {
                 quizId: w_quiz[req.session.record].quizId
             },
             attributes: ['keywordId']
         })
+
+        console.log(`req.session.record: ${req.session.record}`);
+        console.log(`record_length: ${w_quiz.length}`);
+        let lastQuiz = false;
+        if(req.session.record === w_quiz.length - 2){
+            lastQuiz = true;
+            req.session.record = 0;
+        } else {
+            req.session.record++;
+        }
 
         const keyword = await Keyword.findOne({ // 키워드에서 세부 내용 추출
             where: {
@@ -272,6 +272,13 @@ const aiQuiz_create = async (req, res) => {
             const jsonString = data.toString();
             const jsonData = JSON.parse(jsonString.replace(/'/g, '"'));
             console.log(jsonString);
+
+            console.log(`선지: ${jsonData.answer}`);
+
+            jsonData.answer = jsonData.answer.replace(/1/g, 'A');
+            jsonData.answer = jsonData.answer.replace(/2/g, 'B');
+            jsonData.answer = jsonData.answer.replace(/3/g, 'C');
+            jsonData.answer = jsonData.answer.replace(/4/g, 'D');
 
             AiQuiz.create({
                 quizContent: jsonData.question,
@@ -296,8 +303,6 @@ const aiQuiz_create = async (req, res) => {
                     lastQuiz: lastQuiz
                 }
                 aiQuiz.keywordName = keyword.keywordName
-
-                req.session.record++;
 
                 res.status(200).json({
                     aiQuiz
