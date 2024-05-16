@@ -270,8 +270,8 @@ const aiQuiz_create = async (req, res) => {
 
         result.stdout.on('data', async (data) => {
             const jsonString = data.toString();
-            const jsonData = JSON.parse(jsonString.replace(/'/g, '"'));
             console.log(jsonString);
+            const jsonData = JSON.parse(jsonString.replace(/'/g, '"'));
 
             console.log(`선지: ${jsonData.answer}`);
 
