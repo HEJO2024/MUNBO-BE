@@ -266,21 +266,23 @@ const aiQuiz_create = async (req, res) => {
             }
         })
 
-        const result = spawn('python3', ['./aidata/testQuiz.py', keyword.keywordMean])
+        const result = spawn('python3', ['./aidata/testQuiz_3.py', keyword.keywordMean])
 
         result.stdout.on('data', async (data) => {
             const jsonString = data.toString();
             console.log(jsonString);
-            const jsonData = JSON.parse(jsonString.replace(/'/g, '"'));
+            const jsonArray = JSON.parse(jsonString.replace(/'/g, '"'));
+            const jsonData = jsonArray[0];
 
-            console.log(`선지: ${jsonData.answer}`);
+            if (jsonData.answer) {
+                jsonData.answer = jsonData.answer.replace(/1/g, 'A');
+                jsonData.answer = jsonData.answer.replace(/2/g, 'B');
+                jsonData.answer = jsonData.answer.replace(/3/g, 'C');
+                jsonData.answer = jsonData.answer.replace(/4/g, 'D');
+                jsonData.answer = jsonData.answer.replace(/^([A-D])\).*/, '$1');
+            }
 
-            jsonData.answer = jsonData.answer.replace(/1/g, 'A');
-            jsonData.answer = jsonData.answer.replace(/2/g, 'B');
-            jsonData.answer = jsonData.answer.replace(/3/g, 'C');
-            jsonData.answer = jsonData.answer.replace(/4/g, 'D');
-
-            jsonData.answer = jsonData.answer.replace(/^([A-D])\).*/, '$1');
+            console.log(`jsondata: ${jsonData}`)
 
             AiQuiz.create({
                 quizContent: jsonData.question,
@@ -293,7 +295,8 @@ const aiQuiz_create = async (req, res) => {
                 r_answ: jsonData.answer,
                 quizType: 0,
                 keywordId: keywordId.keywordId,
-                userAssessment: 1
+                userAssessment: 1,
+                wrgAnsw_explanation: jsonData.explanation
             })
             .then(create_quiz => {
                 const aiQuiz = {
@@ -301,6 +304,7 @@ const aiQuiz_create = async (req, res) => {
                     quizContent: create_quiz.quizContent,
                     answ: create_quiz.answ,
                     r_answ: create_quiz.r_answ,
+                    wrgAnsw_explanation: create_quiz.wrgAnsw_explanation,
                     org_quizId: w_quiz[req.session.record].quizId,
                     lastQuiz: lastQuiz
                 }
