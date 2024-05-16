@@ -243,8 +243,12 @@ const aiQuiz_create = async (req, res) => {
             })
         }
 
+        let lastQuiz = false;
         if(req.session.record >= w_quiz.length){ //인덱스 범위 초과 시
             req.session.record = 0;
+        }
+        if(req.session.record === w_quiz.length){
+            lastQuiz = true;
         }
         console.log(`req.session.record: ${req.session.record}`);
         console.log(`record_length: ${w_quiz.length}`);
@@ -262,7 +266,7 @@ const aiQuiz_create = async (req, res) => {
             }
         })
 
-        const result = spawn('python3', ['./aidata/testQuiz.py', keyword.keywordMean])
+        const result = spawn('python', ['./aidata/testQuiz.py', keyword.keywordMean])
 
         result.stdout.on('data', async (data) => {
             const jsonString = data.toString();
@@ -288,7 +292,8 @@ const aiQuiz_create = async (req, res) => {
                     quizContent: create_quiz.quizContent,
                     answ: create_quiz.answ,
                     r_answ: create_quiz.r_answ,
-                    org_quizId: w_quiz[req.session.record].quizId
+                    org_quizId: w_quiz[req.session.record].quizId,
+                    lastQuiz: lastQuiz
                 }
                 aiQuiz.keywordName = keyword.keywordName
 
@@ -503,10 +508,15 @@ const aiQuiz_view = async (req, res) => {
             }
         });
 
-        console.log(`quizType: ${quizData[0].quizType}`);
+        let quizType = 0;
+        if(is_summary != 0){
+            quizType = quizData[0].quizType;
+        }
+
+        console.log(`quizType: ${quizType}`);
 
         res.status(200).json({
-             "quizType": quizData[0].quizType,
+             "quizType": quizType,
              quizData
          });
     } catch (error) {
