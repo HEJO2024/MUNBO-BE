@@ -7,6 +7,7 @@ const { auth_quizList, auth_quizView, auth_quizUpdate, auth_quizDelete, auth_use
 const { auth_subjectList, auth_subjectView, auth_subjectCreate, auth_subjectUpdate, auth_subjectDelete } = require('../controller/subject');
 const { auth_roundList, auth_roundView, auth_roundCreate, auth_roundUpdate, auth_roundDelete } = require('../controller/round');
 const { auth_keywordList, auth_keywordView, auth_keywordCreate, auth_keywordUpdate, auth_keywordDelete } = require('../controller/keyword');
+const { auth_prompt } = require('../controller/aiManage');
 
 const userRouter = express.Router();
 const quizRouter = express.Router();
@@ -61,6 +62,8 @@ keywordRouter.delete('/delete', auth_keywordDelete);
 router.get('/userAssessment', auth_userAssessment);
 router.get('/viewRate', auth_viewRate);
 router.get('/viewToken', );
+router.post('/prompt_manager', auth_prompt);
+router.get('', );
 
 router.use('/users', userRouter);
 router.use('/quiz', quizRouter);

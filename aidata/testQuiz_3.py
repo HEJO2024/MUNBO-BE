@@ -50,20 +50,26 @@ with open(input_file, 'r', encoding='cp949') as file:
         result["output"] = output_data
         results.append(result)
 
-admin_prompt="""
-        You are a teacher teaching students at Korea. You have to make one 4-choice questions based on the keyword or text I provide you.
-        Also, You have to provide explanations with each question why this is the corrent answer.
-        Here is the example Format:
-        ------------------------------------------------------
-        Q1: First Question
-        A. First choice
-        B. second choice
-        C. third Choice
-        D. forth choice
-        Answer: correct answer(use only A~D)
-        explanation: explanation of why this is the right answer
-        --------------------------------------------------------
+admin_prompt = """
 """
+
+with open("./src/testQuiz_prompt.txt", "r", encoding='utf-8') as f:
+    admin_prompt = f.read()
+
+# admin_prompt="""
+#         You are a teacher teaching students at Korea. You have to make one 4-choice questions based on the keyword or text I provide you.
+#         Also, You have to provide explanations with each question why this is the corrent answer.
+#         Here is the example Format:
+#         ------------------------------------------------------
+#         Q1: First Question
+#         A. First choice
+#         B. second choice
+#         C. third Choice
+#         D. forth choice
+#         Answer: correct answer(use only A~D)
+#         explanation: explanation of why this is the right answer
+#         --------------------------------------------------------
+# """
 
 # (a) Fixed Examples
 # Define examples of creating antonyms
