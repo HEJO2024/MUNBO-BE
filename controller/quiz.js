@@ -266,7 +266,7 @@ const aiQuiz_create = async (req, res) => {
             }
         })
 
-        const result = spawn('python', ['./aidata/testQuiz.py', keyword.keywordMean])
+        const result = spawn('python3', ['./aidata/testQuiz.py', keyword.keywordMean])
 
         result.stdout.on('data', async (data) => {
             const jsonString = data.toString();
