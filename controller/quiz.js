@@ -280,6 +280,8 @@ const aiQuiz_create = async (req, res) => {
             jsonData.answer = jsonData.answer.replace(/3/g, 'C');
             jsonData.answer = jsonData.answer.replace(/4/g, 'D');
 
+            jsonData.answer = jsonData.answer.replace(/^([A-D])\).*/, '$1');
+
             AiQuiz.create({
                 quizContent: jsonData.question,
                 answ: {
