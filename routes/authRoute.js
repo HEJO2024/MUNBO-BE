@@ -15,6 +15,13 @@ const subjectRouter = express.Router();
 const roundRouter = express.Router();
 const keywordRouter = express.Router();
 
+//미들웨어 관리
+userRouter.use(authenticateAccessToken, authenticateAdmin);
+quizRouter.use(authenticateAccessToken, authenticateAdmin);
+subjectRouter.use(authenticateAccessToken, authenticateAdmin);
+roundRouter.use(authenticateAccessToken, authenticateAdmin);
+keywordRouter.use(authenticateAccessToken, authenticateAdmin);
+
 // 관리자 인증 라우터
 router.post('/users/login', authLogin);
 
@@ -52,11 +59,11 @@ keywordRouter.put('/update', auth_keywordUpdate);
 keywordRouter.delete('/delete', auth_keywordDelete);
 
 //시각화 관리 라우터
-router.get('/userAssessment', auth_userAssessment);
-router.get('/viewRate', auth_viewRate);
+router.get('/userAssessment',authenticateAccessToken, authenticateAdmin, auth_userAssessment);
+router.get('/viewRate', authenticateAccessToken, authenticateAdmin, auth_viewRate);
 router.get('/viewToken', );
-router.get('/prompt_manager', auth_promptView);
-router.post('/prompt_manager', auth_promptUpdate);
+router.get('/prompt_manager',authenticateAccessToken, authenticateAdmin, auth_promptView);
+router.post('/prompt_manager',authenticateAccessToken, authenticateAdmin, auth_promptUpdate);
 router.get('', );
 
 router.use('/users', userRouter);

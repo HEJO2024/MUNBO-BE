@@ -4,7 +4,6 @@ const cors = require('cors');
 const session = require('express-session');
 const bodyParser = require('body-parser');
 const path = require('path');
-const {authenticateAccessToken, authenticateAdmin} = require('./middlewares'); //사용자 인증 모듈
 
 dotenv.config();
 
@@ -41,7 +40,7 @@ var quizRouter = require('./routes/quizRoute');
 var summaryRouter = require('./routes/summaryRoute');
 
 app.use('/users', userRouter);
-app.use('/admin', authenticateAccessToken, authenticateAdmin, authRouter);
+app.use('/admin', authRouter);
 app.use('/quiz', quizRouter);
 app.use('/summaryNote', summaryRouter);
 
