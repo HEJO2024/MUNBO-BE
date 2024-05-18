@@ -7,20 +7,13 @@ const { auth_quizList, auth_quizView, auth_quizUpdate, auth_quizDelete, auth_use
 const { auth_subjectList, auth_subjectView, auth_subjectCreate, auth_subjectUpdate, auth_subjectDelete } = require('../controller/subject');
 const { auth_roundList, auth_roundView, auth_roundCreate, auth_roundUpdate, auth_roundDelete } = require('../controller/round');
 const { auth_keywordList, auth_keywordView, auth_keywordCreate, auth_keywordUpdate, auth_keywordDelete } = require('../controller/keyword');
-const { auth_prompt } = require('../controller/aiManage');
+const { auth_promptView,auth_promptUpdate } = require('../controller/aiManage');
 
 const userRouter = express.Router();
 const quizRouter = express.Router();
 const subjectRouter = express.Router();
 const roundRouter = express.Router();
 const keywordRouter = express.Router();
-
-// 미들웨어 적용
-userRouter.use(authenticateAccessToken, authenticateAdmin);
-quizRouter.use(authenticateAccessToken, authenticateAdmin);
-subjectRouter.use(authenticateAccessToken, authenticateAdmin);
-roundRouter.use(authenticateAccessToken, authenticateAdmin);
-keywordRouter.use(authenticateAccessToken, authenticateAdmin);
 
 // 관리자 인증 라우터
 router.post('/users/login', authLogin);
@@ -62,7 +55,8 @@ keywordRouter.delete('/delete', auth_keywordDelete);
 router.get('/userAssessment', auth_userAssessment);
 router.get('/viewRate', auth_viewRate);
 router.get('/viewToken', );
-router.post('/prompt_manager', auth_prompt);
+router.get('/prompt_manager', auth_promptView);
+router.post('/prompt_manager', auth_promptUpdate);
 router.get('', );
 
 router.use('/users', userRouter);
