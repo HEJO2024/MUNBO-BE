@@ -6,6 +6,7 @@ const spawn = require('child_process').spawn;
 const Sequelize = require('sequelize');
 const { json } = require('body-parser');
 const QuizNote = require('../models/QuizNote');
+const Gpt_token = require('../models/Gpt_token');
 
 function getCurrentDateTime() {
     const currentDate = new Date();
@@ -125,74 +126,97 @@ const summaryQuiz_create = async (req, res) => {
             quizType: quizType
         }
         const inputJson = JSON.stringify(userInput);
-        let f_python = './aidata/summaryQuiz_2.py';
+        let f_python = './aidata/summaryQuiz_4.py';
         if(quizType === 0){
-            f_python = './aidata/summaryQuiz.py'
+            f_python = './aidata/summaryQuiz_3.py'
         }
         const result = spawn('python3', [f_python, inputJson]);
 
         const quizDataArray = []; // 생성된 퀴즈 데이터를 저장할 배열
 
         result.stdout.on('data', async (data) => {
-            const jsonString = data.toString();
-            const jsonData = JSON.parse(jsonString.replace(/'/g, '"'));
-            // 생성문제 db 저장
-            for (let i = 0; i < quizNum; i++) {
-                if (quizType === 0) { // 객관식
-                    await AiQuiz.create({
-                        summaryId: summaryId,
-                        quizContent: jsonData[i].question,
-                        answ: {
-                            answ_1: jsonData[i].options[0],
-                            answ_2: jsonData[i].options[1],
-                            answ_3: jsonData[i].options[2],
-                            answ_4: jsonData[i].options[3]
-                        },
-                        r_answ: jsonData[i].answer,
-                        quizType: quizType,
-                        userAssessment: 1
-                    })
-                    .then(quizData => {
-                        quizDataArray.push(quizData); // 생성된 퀴즈 데이터를 배열에 추가
-                        console.log(`aiQuiz save success`);
-        
-                        if (quizDataArray.length === quizNum) {
-                            res.status(200).json({
-                                "quizData": quizDataArray
-                            });
-                        }
-                    })
-                    .catch(error => {
-                        console.log(error);
-                        res.status(500).json({
-                            "message": "Internal server error"
+            const dataString = data.toString();
+
+            // 마지막 숫자를 추출하기 위해 정규 표현식 사용
+            const numberMatch = dataString.match(/(\d+)\s*$/);
+
+            if(numberMatch){
+                const number = numberMatch[1];
+
+                // 토큰 사용량 db 저장
+                const token = await Gpt_token.create({
+                    token_usage: number
+                })
+
+                console.log(`token: ${token.token_usage}`);
+
+                const jsonString = dataString.substring(0, numberMatch.index).trim();
+
+                const jsonData = JSON.parse(jsonString.replace(/'/g, '"'));
+
+                //생성문제 db 저장
+                for (let i = 0; i < quizNum; i++) {
+                    if (quizType === 0) { // 객관식
+                        await AiQuiz.create({
+                            summaryId: summaryId,
+                            quizContent: jsonData[i].question,
+                            answ: {
+                                answ_1: jsonData[i].options[0],
+                                answ_2: jsonData[i].options[1],
+                                answ_3: jsonData[i].options[2],
+                                answ_4: jsonData[i].options[3]
+                            },
+                            r_answ: jsonData[i].answer,
+                            quizType: quizType,
+                            userAssessment: 1
                         })
-                    })
-                } else { // 주관식
-                    await AiQuiz.create({
-                        summaryId: summaryId,
-                        quizContent: jsonData[i].question,
-                        r_answ: jsonData[i].answer,
-                        quizType: quizType,
-                        userAssessment: 1
-                    })
-                    .then(quizData => {
-                        quizDataArray.push(quizData); // 생성된 퀴즈 데이터를 배열에 추가
-                        console.log(`aiQuiz save success`);
-        
-                        if (quizDataArray.length === quizNum) {
-                            res.status(200).json({
-                                "quizData": quizDataArray
-                            });
-                        }
-                    })
-                    .catch(error => {
-                        console.log(error);
-                        res.status(500).json({
-                            "message": "Internal server error"
+                        .then(quizData => {
+                            quizDataArray.push(quizData); // 생성된 퀴즈 데이터를 배열에 추가
+                            console.log(`aiQuiz save success`);
+            
+                            if (quizDataArray.length === quizNum) {
+                                res.status(200).json({
+                                    "quizData": quizDataArray
+                                });
+                            }
                         })
-                    })
+                        .catch(error => {
+                            console.log(error);
+                            res.status(500).json({
+                                "message": "Internal server error"
+                            })
+                        })
+                    } else { // 주관식
+                        await AiQuiz.create({
+                            summaryId: summaryId,
+                            quizContent: jsonData[i].question,
+                            r_answ: jsonData[i].answer,
+                            quizType: quizType,
+                            userAssessment: 1
+                        })
+                        .then(quizData => {
+                            quizDataArray.push(quizData); // 생성된 퀴즈 데이터를 배열에 추가
+                            console.log(`aiQuiz save success`);
+            
+                            if (quizDataArray.length === quizNum) {
+                                res.status(200).json({
+                                    "quizData": quizDataArray
+                                });
+                            }
+                        })
+                        .catch(error => {
+                            console.log(error);
+                            res.status(500).json({
+                                "message": "Internal server error"
+                            })
+                        })
+                    }
                 }
+            } else {
+                console.error("No number found at the end of the string");
+                res.status(400).json({
+                    "message": "No number found at the end of the string"
+                })
             }
         })
 
