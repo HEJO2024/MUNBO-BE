@@ -174,7 +174,7 @@ const auth_csv = async (req, res) => {
 
     await csvWriter.writeRecords(quizArray);
         console.log('csv file was written successfully');
-        res.status(200).send('CSV 파일이 성공적으로 작성되었습니다');
+        res.status(200).send('csv file was written successfully');
 }
 
 module.exports = {
