@@ -9,6 +9,12 @@ dotenv.config();
 
 const app = express();
 
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  // 다른 CORS 관련 헤더 설정도 가능
+  next();
+});
+
 // 세션 설정
 app.use(session({
   secret: process.env.SESSION_KEY, // 세션 암호화에 사용되는 비밀 키
@@ -21,12 +27,6 @@ app.use(bodyParser.urlencoded({ extended: false }));
 // 미들웨어
 app.use(express.json());
 app.use(express.static('public'));
-
-app.use((req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  // 다른 CORS 관련 헤더 설정도 가능
-  next();
-});
 
 app.use((req, res, next) => {
   console.log(`${req.method} ${req.url}`);
