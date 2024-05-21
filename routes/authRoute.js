@@ -7,7 +7,7 @@ const { auth_quizList, auth_quizView, auth_quizUpdate, auth_quizDelete, auth_use
 const { auth_subjectList, auth_subjectView, auth_subjectCreate, auth_subjectUpdate, auth_subjectDelete } = require('../controller/subject');
 const { auth_roundList, auth_roundView, auth_roundCreate, auth_roundUpdate, auth_roundDelete } = require('../controller/round');
 const { auth_keywordList, auth_keywordView, auth_keywordCreate, auth_keywordUpdate, auth_keywordDelete } = require('../controller/keyword');
-const { auth_promptView,auth_promptUpdate } = require('../controller/aiManage');
+const { auth_promptView,auth_promptUpdate, auth_viewToken, auth_csv } = require('../controller/aiManage');
 
 const userRouter = express.Router();
 const quizRouter = express.Router();
@@ -61,10 +61,10 @@ keywordRouter.delete('/delete', auth_keywordDelete);
 //시각화 관리 라우터
 router.get('/userAssessment',authenticateAccessToken, authenticateAdmin, auth_userAssessment);
 router.get('/viewRate', authenticateAccessToken, authenticateAdmin, auth_viewRate);
-router.get('/viewToken', );
+router.get('/viewToken', authenticateAccessToken, authenticateAdmin, auth_viewToken);
 router.get('/prompt_manager',authenticateAccessToken, authenticateAdmin, auth_promptView);
 router.post('/prompt_manager',authenticateAccessToken, authenticateAdmin, auth_promptUpdate);
-router.get('', );
+router.post('/csv_manager', authenticateAccessToken, authenticateAdmin, auth_csv);
 
 router.use('/users', userRouter);
 router.use('/quiz', quizRouter);
