@@ -109,13 +109,13 @@ const testNext = async (req, res) => {
                 userId: req.userId,
                 quizId: quizId,
                 userAnsw: userAnsw,
-                is_correct: is_correct
+                is_correct: is_correctInt
             })
         } else {
             console.log(`solve record update success!`);
             await UserSolveRecord.update({
                 userAnsw: userAnsw,
-                is_correct: is_correct
+                is_correct: is_correctInt
             }, {
                 where: {
                     recordId: userRecord.recordId
