@@ -94,8 +94,9 @@ const testSolve = async (req, res) => {
 
 const testNext = async (req, res) => {
     const { quizId, userAnsw, is_correct } = req.query;
-    console.log(`is_correct type: ${typeof(is_correct)}`);
     const is_correctInt = parseInt(is_correct);
+    console.log(`is_correct: ${is_correct}`);
+    console.log(`int?: ${is_correctInt}`);
 
     try {
         const userRecord = await UserSolveRecord.findOne({
