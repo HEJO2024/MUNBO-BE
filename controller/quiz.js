@@ -226,8 +226,6 @@ const aiQuiz_create = async (req, res) => {
             attributes: ['keywordId']
         })
 
-        
-
         console.log(`req.session.record: ${req.session.record}`);
         console.log(`record_length: ${w_quiz.length}`);
         let lastQuiz = false;
@@ -294,7 +292,7 @@ const aiQuiz_create = async (req, res) => {
                         answ: create_quiz.answ,
                         r_answ: create_quiz.r_answ,
                         wrgAnsw_explanation: create_quiz.wrgAnsw_explanation,
-                        org_quizId: w_quiz[req.session.record].quizId,
+                        org_quizId: w_quiz[req.session.record - 1].quizId,
                         lastQuiz: lastQuiz
                     }
                     aiQuiz.keywordName = keyword.keywordName
