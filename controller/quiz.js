@@ -226,6 +226,8 @@ const aiQuiz_create = async (req, res) => {
             attributes: ['keywordId']
         })
 
+        
+
         console.log(`req.session.record: ${req.session.record}`);
         console.log(`record_length: ${w_quiz.length}`);
         let lastQuiz = false;
@@ -236,11 +238,13 @@ const aiQuiz_create = async (req, res) => {
             req.session.record++;
         }
 
-        const keyword = await Keyword.findOne({ // 키워드에서 세부 내용 추출
+        let keyword = await Keyword.findOne({ // 키워드에서 세부 내용 추출
             where: {
                 keywordId: keywordId.keywordId
             }
         })
+
+        console.log(`keyword: ${keyword.keywordName}`)
 
         const result = spawn('python3', ['./aidata/testQuiz_4.py', keyword.keywordMean])
 
@@ -257,6 +261,7 @@ const aiQuiz_create = async (req, res) => {
                 const jsonString = dataString.substring(0, numberMatch.index).trim();
                 const jsonArray = JSON.parse(jsonString.replace(/'/g, '"'));
                 const jsonData = jsonArray[0];
+                console.log(`aiQuiz: ${jsonData}`);
 
                 if (jsonData.answer) {
                     jsonData.answer = jsonData.answer.replace(/1/g, 'A');
